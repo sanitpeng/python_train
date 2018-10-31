@@ -22,13 +22,13 @@ sns.set_context(rc={'figure.figsize': (14, 7)})
 
 # 开始配置真实环境，
 from abupy import EMarketDataFetchMode
-#abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL 
-abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL 
+#abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
 abupy.env.g_data_fetch_mode
 abupy.env.g_market_source 
 
-kl_pd = ABuSymbolPd.make_kl_df('600309', n_folds=2)
+kl_pd = ABuSymbolPd.make_kl_df('600309', n_folds=1)
 
 
 
@@ -77,12 +77,13 @@ def sample_711():
 def sample_712_1():
     """
     7.1.2 均值回复策略
-    :return:
     """
-    # 头一年（[:252]）作为训练数据, 美股交易中一年的交易日有252天
-    train_kl = kl_pd[:252]
-    # 后一年（[252:]）作为回测数据
-    test_kl = kl_pd[252:]
+    len = int(kl_pd.shape[0] / 2)
+
+    # 头半（[:252]）作为训练数据, 美股交易中一年的交易日有252天
+    train_kl = kl_pd[:len]
+    # 后半（[252:]）作为回测数据
+    test_kl = kl_pd[len:2*len]
 
     # 分别画出两部分数据收盘价格曲线
     tmp_df = pd.DataFrame(
@@ -99,8 +100,11 @@ def sample_712_2(show=True):
     7.1.2 均值回复策略
     :return:
     """
-    train_kl = kl_pd[:252]
-    test_kl = kl_pd[252:]
+
+    len = int(kl_pd.shape[0] / 2)
+    train_kl = kl_pd[:len]
+    test_kl = kl_pd[len:2*len]
+
 
     # 训练数据的收盘价格均值
     close_mean = train_kl.close.mean()
@@ -241,10 +245,18 @@ def sample_713():
     # print('pd.expanding_max(demo_list):', pd.expanding_max(demo_list))
     print('pd.expanding_max(demo_list):', pd_expanding_max(demo_list))
 
+    """
     # 当天收盘价格超过N1天内最高价格作为买入信号
     N1 = 42
     # 当天收盘价格超过N2天内最低价格作为卖出信号
     N2 = 21
+    """
+
+
+    N1 = 42 
+    N2 = 21
+
+
     # 通过rolling_max方法计算最近N1个交易日的最高价
     # kl_pd['n1_high'] = pd.rolling_max(kl_pd['high'], window=N1)
     kl_pd['n1_high'] = pd_rolling_max(kl_pd['high'], window=N1)
@@ -573,12 +585,12 @@ def sample_723():
 
 
 if __name__ == "__main__":
-    sample_711()
+    # sample_711()
     # sample_712_1()
     # sample_712_2()
     # sample_712_3()
     # sample_712_4()
-    # sample_713()
+    sample_713()
     # sample_722_1()
     # sample_722_2()
     # sample_722_3()
