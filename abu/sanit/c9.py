@@ -328,7 +328,7 @@ def sample_94_1():
     abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
     # 首选这里预下载市场中所有股票的6年数据(做5年回测，需要预先下载6年数据)
-    abu.run_kl_update(start='2011-08-08', end='2017-08-08', market=EMarketTargetType.E_MARKET_TARGET_US)
+    abu.run_kl_update(start='2011-08-08', end='2018-11-03', market=EMarketTargetType.E_MARKET_TARGET_CN)
 
 
 def sample_94_2(from_cache=False):
@@ -354,7 +354,7 @@ def sample_94_2(from_cache=False):
     if from_cache:
         abu_result_tuple = \
             abu.load_abu_result_tuple(n_folds=5, store_type=EStoreAbu.E_STORE_CUSTOM_NAME,
-                                      custom_name='train_us')
+                                      custom_name='train_cn')
     else:
         # 初始化资金200万，资金管理依然使用默认atr
         read_cash = 5000000
@@ -368,10 +368,10 @@ def sample_94_2(from_cache=False):
                                                 buy_factors, sell_factors,
                                                 stock_pickers,
                                                 choice_symbols=None,
-                                                start='2012-08-08', end='2017-08-08')
+                                                start='2013-11-03', end='2018-11-03')
         # 把运行的结果保存在本地，以便之后分析回测使用，保存回测结果数据代码如下所示
         abu.store_abu_result_tuple(abu_result_tuple, n_folds=5, store_type=EStoreAbu.E_STORE_CUSTOM_NAME,
-                                   custom_name='train_us')
+                                   custom_name='train_cn')
 
     print('abu_result_tuple.action_pd.deal.value_counts():\n', abu_result_tuple.action_pd.deal.value_counts())
 
@@ -408,8 +408,8 @@ def sample_94_3(from_cache=False, show=True):
         choice_symbols = None
         abu_result_tuple_test, kl_pd_manager_test = abu.run_loop_back(read_cash,
                                                                       buy_factors, sell_factors, stock_pickers,
-                                                                      choice_symbols=choice_symbols, start='2012-08-08',
-                                                                      end='2017-08-08')
+                                                                      choice_symbols=choice_symbols, start='2013-11-03',
+                                                                      end='2018-11-03')
         abu.store_abu_result_tuple(abu_result_tuple_test, n_folds=5, store_type=EStoreAbu.E_STORE_CUSTOM_NAME,
                                    custom_name='test_us')
 
@@ -469,12 +469,12 @@ def sample_94_4(from_cache=False):
 """
 
 if __name__ == "__main__":
-    # sample_91()
+    sample_91()
     # sample_922()
     # sample_931()
     # sample_932()
     # 耗时操作
-    sample_933()
+    # sample_933()
     # sample_934()
     # sample_935_1()
     # sample_935_2()
