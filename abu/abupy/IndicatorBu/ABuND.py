@@ -5,11 +5,13 @@ from . import ABuNDBoll as boll
 from . import ABuNDMa as ma
 from . import ABuNDMacd as macd
 from . import ABuNDRsi as rsi
+from . import ABuNDKdj as kdj
 
 __all__ = [
     'atr',
     'boll',
     'ma',
     'macd',
-    'rsi'
+    'rsi',
+    'kdj'
 ]
