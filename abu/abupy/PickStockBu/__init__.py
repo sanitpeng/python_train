@@ -5,6 +5,7 @@ from .ABuPickSimilarNTop import AbuPickSimilarNTop
 from .ABuPickStockBase import AbuPickStockBase
 from .ABuPickStockPriceMinMax import AbuPickStockPriceMinMax
 from .ABuPickStockDemo import AbuPickStockShiftDistance, AbuPickStockNTop
+from .ABuPickKDJ import AbuPickKDJ
 from . import ABuPickStock as ps
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     'AbuPickStockPriceMinMax',
     'AbuPickStockShiftDistance',
     'AbuPickStockNTop',
+    'AbuPickKDJ',
     'ps']

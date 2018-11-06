@@ -31,6 +31,7 @@ from abupy import AbuPickStockWorker
 from abupy import ABuPickStockExecute
 from abupy import AbuPickStockPriceMinMax
 from abupy import AbuPickStockMaster
+from abupy import AbuPickKDJ
 
 warnings.filterwarnings('ignore')
 sns.set_context(rc={'figure.figsize': (14, 7)})
@@ -298,6 +299,39 @@ def sample_817():
     直接达不到选股的min_xd，所以这里其实可以`abupy.env.disable_example_env_ipython()`关闭沙盒环境，直接上真实数据。
 """
 
+def sample_kdj():
+    abupy.env.disable_example_env_ipython()
+    
+    from abupy import EMarketTargetType
+    abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
+    stock_pickers = [{'class': AbuPickKDJ, 'reversed': True}]
+
+    #stock_pickers = [{'class': AbuPickKDJ,
+    #                  'threshold_ang_min': 0.0, 'reversed': False}]
+
+    # 从这几个股票里进行选股，只是为了演示方便
+    # 一般的选股都会是数量比较多的情况比如全市场股票
+    #choice_symbols = ['002236']
+    choice_symbols = ['600309']
+
+    benchmark = AbuBenchmark()
+    capital = AbuCapital(STOCK_CAPITAL, benchmark)
+    kl_pd_manager = AbuKLManager(benchmark, capital)
+    stock_pick = AbuPickStockWorker(capital, benchmark, kl_pd_manager,
+                                    choice_symbols=choice_symbols,
+                                    stock_pickers=stock_pickers)
+    stock_pick.fit()
+    # 打印最后的选股结果
+    print('stock_pick.choice_symbols:', stock_pick.choice_symbols)
+
+
+   # 从kl_pd_manager缓存中获取选股走势数据，注意get_pick_stock_kl_pd为选股数据，get_pick_time_kl_pd为择时
+    kl_pd_noah = kl_pd_manager.get_pick_stock_kl_pd(stock_pick.choice_symbols[0])
+    print(kl_pd_noah)
+
+    # 绘制并计算角度
+    deg = ABuRegUtil.calc_regress_deg(kl_pd_noah.close)
+    print('noah 选股周期内角度={}'.format(round(deg, 3)))
 
 def sample_821_1():
     """
@@ -305,7 +339,8 @@ def sample_821_1():
     :return:
     """
     #使用沙盒， 因为这个就是个简单的例子
-    abupy.env.enable_example_env_ipython()
+    #abupy.env.enable_example_env_ipython()
+    abupy.env.disable_example_env_ipython()
 
     # 选股条件threshold_ang_min=0.0, 即要求股票走势为向上上升趋势
     stock_pickers = [{'class': AbuPickRegressAngMinMax,
@@ -447,5 +482,6 @@ if __name__ == "__main__":
     # sample_821_1()
     # sample_821_2()
     # sample_821_3()
-    sample_822()
+    # sample_822()
     # sample_823()
+    sample_kdj()
