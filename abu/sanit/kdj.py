@@ -7,11 +7,8 @@ import warnings
 
 # noinspection PyUnresolvedReferences
 import abu_local_env
-
 import abupy
-
 from abupy import AbuMetricsBase
-
 from abupy import AbuFactorBuyBreak
 from abupy import AbuFactorAtrNStop
 from abupy import AbuFactorPreAtrNStop
@@ -19,6 +16,7 @@ from abupy import AbuFactorCloseAtrNStop
 # run_loop_back等一些常用且最外层的方法定义在abu中
 from abupy import abu
 from abupy import EMarketTargetType, EMarketSourceType, EDataCacheType
+from abupy import EMarketTargetType
 from abupy import EMarketDataFetchMode
 from abupy import AbuBenchmark
 #indicators 
@@ -26,6 +24,9 @@ from abupy import nd
 from abupy import AbuCapital
 from abupy import AbuKLManager
 from abupy import ABuSymbolPd
+
+from abupy import AbuPickStockWorker
+from abupy import AbuPickKDJ
 
 warnings.filterwarnings('ignore')
 sns.set_context(rc={'figure.figsize': (14, 7)})
@@ -36,11 +37,16 @@ STOCK_CAPITAL = 100000
 STOCK_SYMBOLS = ['002236']
 
 # 设置选股因子，None为不使用选股因子
-stock_pickers = None
+#kdj defaut (9, 3, 3) can be set use (fastk_period, slowk_period, fastd_period)
+#also k_threshold, d_threshold, j_threshold choice threshold should use those params, 
+
+#stock_pickers = [{'class': AbuPickKDJ, 'reversed': True}]
+stock_pickers = [{'class': AbuPickKDJ, 'reversed': True}]
 
 # 买入因子依然延用向上突破因子
 buy_factors = [{'xd': 60, 'class': AbuFactorBuyBreak},
                {'xd': 42, 'class': AbuFactorBuyBreak}]
+
 
 # 卖出因子继续使用上一章使用的因子
 sell_factors = [
@@ -53,16 +59,26 @@ sell_factors = [
 
 
 
-def run_kdj(show=True):
-   
-    """
+def pick_stock_by_kdj(show=True):
+
+    # 从这几个股票里进行选股，只是为了演示方便
+    # 一般的选股都会是数量比较多的情况比如全市场股票
+    #choice_symbols = ['002236']
+    choice_symbols = ['600309']
+
     benchmark = AbuBenchmark()
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
     kl_pd_manager = AbuKLManager(benchmark, capital)
+    stock_pick = AbuPickStockWorker(capital, benchmark, kl_pd_manager,
+                                    choice_symbols=choice_symbols,
+                                    stock_pickers=stock_pickers)
+    stock_pick.fit()
+    # 打印最后的选股结果
+    if show == True:
+        print('stock_pick.choice_symbols:', stock_pick.choice_symbols)
 
-    kl_pd = kl_pd_manager.get_pick_time_kl_pd('002236')
-    """
-   
+
+def run_kdj():
 
     kl_pd = ABuSymbolPd.make_kl_df('002236', n_folds=1)
 
@@ -79,16 +95,12 @@ def run_kdj(show=True):
 
 def init_env():
     #环境
-    #abupy.env.enable_example_env_ipython()
     abupy.env.disable_example_env_ipython()
     abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
     #abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
+    abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN    
 
-    # 设置初始资金数
-    init_cash = STOCK_CAPITAL
-    # 择时股票池
-    choice_symbols = STOCK_SYMBOLS
     
 def download_all_data():
     from abupy import EMarketTargetType, EMarketSourceType, EDataCacheType
@@ -105,4 +117,4 @@ def download_all_data():
 
 if __name__ == "__main__":
     init_env()
-    run_kdj()
+    pick_stock_by_kdj()

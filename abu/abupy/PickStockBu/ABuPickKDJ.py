@@ -32,6 +32,8 @@ class AbuPickKDJ(AbuPickStockBase):
         if 'fastd_period' in kwargs:
             self.fastd_period = kwargs['fastd_period']
 
+        self.k_threshold = 20 
+        self.d_threshold = 20
         self.j_threshold = 0
 
 
@@ -40,14 +42,10 @@ class AbuPickKDJ(AbuPickStockBase):
         """开始根据自定义拟合角度边际参数进行选股"""
 
         k, d, j = ABuNDKdj.calc_kdj(kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
-
+        #use last day 
         v = j[-1]
        
-        print (kl_pd)
-        print ("*************************")
-        print ("j = ", j[-10:])
-
-        # 根据参数进行角度条件判断
+        # 根据参数进行条件判断
         if v < self.j_threshold:
             return True
         return False
