@@ -34,7 +34,12 @@ class AbuSlippageBuyBase(six.with_metaclass(ABCMeta, object)):
 
     def fit(self):
         """做基础验证比如今天是否停盘后调用fit_price"""
+
         if self.kl_pd_buy.empty or self.kl_pd_buy.volume == 0:
+            #add by sanit.peng, for check the data
+            print("当日股票停牌")
+            print (self.kl_pd_buy)
+
             # 买入时正无穷为放弃单子
             return np.inf
 
