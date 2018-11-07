@@ -1,0 +1,69 @@
+# -*- encoding:utf-8 -*-
+"""
+    卖出择时因子：KDJ
+"""
+
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+
+import pandas as pd
+
+from .ABuFactorSellBase import AbuFactorSellBase, ESupportDirection
+from ..IndicatorBu import ABuNDKdj
+from ..UtilBu import ABuDateUtil
+
+__author__ = 'sanit.peng'
+__weixin__ = 'peng'
+
+
+class AbuFactorSellKDJ(AbuFactorSellBase):
+
+    def _init_self(self, **kwargs):
+
+        self.fastk_period = kwargs.pop('fastk_period', 9)
+        self.slowk_period = kwargs.pop('slowk_period', 3)
+        self.fastd_period = kwargs.pop('fastd_period', 3)
+
+
+        self.k_threshold = kwargs.pop('k_threshold', 80)
+        self.d_threshold = kwargs.pop('d_threshold', 80)
+        self.j_threshold = kwargs.pop('j_threshold', 100)
+
+        #buld the symbol's kdj
+        k, d, j = ABuNDKdj.calc_kdj(self.kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
+        self.kdj = pd.DataFrame({
+                'KDJ_K': k,
+                'KDJ_D': d,
+                'KDJ_J': j
+        })
+
+        #print (self.kl_pd)
+
+        self.sell_type_extra = '{}:sell_n={}'.format(self.__class__.__name__, self.j_threshold)
+
+
+    def support_direction(self):
+        """因子支持两个方向"""
+        return [ESupportDirection.DIRECTION_CAll.value, ESupportDirection.DIRECTION_PUT.value]
+
+    def fit_day(self, today, orders):
+        """
+        :param today: 当前驱动的交易日金融时间序列数据
+        :param orders: 买入择时策略中生成的订单序列
+        :return:
+        """
+
+        #use today
+        k_value = self.kdj.KDJ_K[self.today_ind]
+        d_value = self.kdj.KDJ_D[self.today_ind]
+        j_value = self.kdj.KDJ_J[self.today_ind]
+
+        for order in orders:
+            if j_value >= self.j_threshold:
+                #print(order)
+                #print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
+                # 只要超过self.sell_n即卖出
+                #self.sell_today(order) if self.is_sell_today else self.sell_tomorrow(order)
+                self.sell_tomorrow(order)

@@ -52,7 +52,7 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
         })
 
 
-        print (self.kl_pd)
+        #print (self.kl_pd)
 
         # 在输出生成的orders_pd中显示的名字
         self.factor_name = '{}:{}'.format(self.__class__.__name__, self.j_threshold )
@@ -62,8 +62,7 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
         :param today: 当前驱动的交易日金融时间序列数据
         """
 
-
-        #use last day
+        #use today
         k_value = self.kdj.KDJ_K[self.today_ind]
         d_value = self.kdj.KDJ_D[self.today_ind]
         j_value = self.kdj.KDJ_J[self.today_ind]

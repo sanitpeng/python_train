@@ -12,6 +12,7 @@ import abu_local_env
 import abupy
 from abupy import AbuFactorBuyBreak
 from abupy import AbuFactorSellBreak
+from abupy import AbuFactorSellKDJ
 from abupy import AbuFactorAtrNStop
 from abupy import AbuFactorPreAtrNStop
 from abupy import AbuFactorCloseAtrNStop
@@ -50,7 +51,8 @@ abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
 #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
 #kl_pd = ABuSymbolPd.make_kl_df('600309', n_folds=2)
-STOCK_NUM = '600309'
+#STOCK_NUM = '600309'
+STOCK_NUM = '002236'
 STOCK_CAPITAL = 100000
 
 
@@ -304,22 +306,41 @@ def sample_817():
 
 
 def pick_time_kdj():
-    # buy_factors 60日向上突破，42日向上突破两个因子
+    # buy factors 
     buy_factors = [{'class': AbuFactorBuyKDJ}]
+    
 
+    #sell factors
+    sell_factor1 = {'class': AbuFactorSellKDJ}
+
+    """
+    # 趋势跟踪策略止盈要大于止损设置值，这里0.5，3.0
+    sell_factor2 = {'stop_loss_n': 0.5, 'stop_win_n': 3.0, 'class': AbuFactorAtrNStop}
+    # 暴跌止损卖出因子形成dict
+    sell_factor3 = {'class': AbuFactorPreAtrNStop, 'pre_atr_n': 1.0}
+    # 保护止盈卖出因子组成dict
+    sell_factor4 = {'class': AbuFactorCloseAtrNStop, 'close_atr_n': 1.5}
+    # 四个卖出因子同时生效，组成sell_factors
+    sell_factors = [sell_factor1, sell_factor2, sell_factor3, sell_factor4]
+    """
+
+    sell_factors = [sell_factor1]
+
+
+    #A股，永不可能，相当于不丢弃单子，这里缺省使用的均值滑点
+    abupy.slippage.sbm.g_open_down_rate = 0.11
+    
     benchmark = AbuBenchmark()
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
     kl_pd_manager = AbuKLManager(benchmark, capital)
 
     # 获取symbol的交易数据
     kl_pd = kl_pd_manager.get_pick_time_kl_pd(STOCK_NUM)
-    abu_worker = AbuPickTimeWorker(capital, kl_pd, benchmark, buy_factors, None)
+    abu_worker = AbuPickTimeWorker(capital, kl_pd, benchmark, buy_factors, sell_factors)
     abu_worker.fit()
 
-   
-    print (abu_worker.orders)
 
-    return 0
+    print (abu_worker.orders)
 
     orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True)
 
