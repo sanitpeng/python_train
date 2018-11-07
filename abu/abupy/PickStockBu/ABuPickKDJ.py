@@ -42,6 +42,10 @@ class AbuPickKDJ(AbuPickStockBase):
         """开始根据自定义拟合角度边际参数进行选股"""
 
         k, d, j = ABuNDKdj.calc_kdj(kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
+        kl_pd['KDJ_K'] = k
+        kl_pd['KDJ_D'] = d
+        kl_pd['KDJ_J'] = j
+
         #use last day 
         v = j[-1]
        

@@ -7,6 +7,7 @@ from .ABuFactorBuyDemo import AbuSDBreak, AbuTwoDayBuy, AbuWeekMonthBuy, AbuFact
 from .ABuFactorBuyDemo import AbuFactorBuyBreakReocrdHitDemo, AbuFactorBuyBreakHitPredictDemo
 from .ABuFactorBuyDM import AbuDoubleMaBuy
 from .ABuFactorBuyTrend import AbuUpDownTrend, AbuDownUpTrend, AbuUpDownGolden
+from .ABuFactorBuyKDJ import AbuFactorBuyKDJ
 
 __all__ = [
     'AbuFactorBuyBase',
@@ -26,5 +27,6 @@ __all__ = [
     'AbuDoubleMaBuy',
     'AbuUpDownTrend',
     'AbuDownUpTrend',
-    'AbuUpDownGolden'
+    'AbuUpDownGolden',
+    'AbuFactorBuyKDJ'
 ]

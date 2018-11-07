@@ -250,7 +250,7 @@ class AbuKLManager(object):
                     kl_pd.name = target_symbol
                 return kl_pd
 
-        # 字典中每找到，进行fetch
+        # 字典中没找到，进行fetch
         kl_pd = self._fetch_pick_stock_kl_pd(xd, target_symbol)
         """选股字典是三层字典结构，比择时字典多一层，因为有选股周期做为第三层字典的key"""
         if kl_pd is None or kl_pd.shape[0] == 0:
