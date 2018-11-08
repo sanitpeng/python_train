@@ -16,7 +16,7 @@ from .ABuNDBase import plot_from_order, g_calc_type, ECalcType
 from ..CoreBu.ABuPdHelper import pd_rolling_mean, pd_rolling_std
 
 __author__ = 'sanit.peng'
-__weixin__ = 'example'
+__weixin__ = 'sanit'
 
 
 # noinspection PyUnresolvedReferences
@@ -38,8 +38,10 @@ def _kdj_cn(high, low, close, fastk_period, slowk_period, fastd_period) :
     kValue = np.array(map(lambda x : _sma_cn(kValue[:x], slowk_period), range(1, len(kValue) + 1)))
     dValue = np.array(map(lambda x : _sma_cn(kValue[:x], fastd_period), range(1, len(kValue) + 1)))
 
+
     jValue = 3 * kValue - 2 * dValue
 
+    """
     #func = lambda arr : np.array([0 if x < 0 else (100 if x > 100 else x) for x in arr])
     # modify by pengxu , allow j < 0 and j > 100
     func = lambda arr : np.array([x if x < 0 else (x if x > 100 else x) for x in arr])
@@ -47,6 +49,8 @@ def _kdj_cn(high, low, close, fastk_period, slowk_period, fastd_period) :
     kValue = func(kValue)
     dValue = func(dValue)
     jValue = func(jValue)
+    """
+
     return kValue, dValue, jValue
 
 

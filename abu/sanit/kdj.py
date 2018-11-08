@@ -3,6 +3,7 @@ from __future__ import print_function
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import pandas as pd
 import warnings
 
 # noinspection PyUnresolvedReferences
@@ -98,17 +99,29 @@ def pick_stock_by_kdj(show=True):
 
 def run_kdj():
 
-    kl_pd = ABuSymbolPd.make_kl_df('002236', n_folds=1)
+    kl_pd = ABuSymbolPd.make_kl_df('002236', n_folds=3)
+    #kl_pd = ABuSymbolPd.make_kl_df('000001', n_folds=3)
+    #kl_pd = ABuSymbolPd.make_kl_df('600309', n_folds=3)
 
     print (kl_pd)
 
+    #print (kl_pd[kl_pd['volume'] == 0]) 
+    #print (kl_pd[kl_pd['close'] == 14.91]) 
     """
+    print (kl_pd[kl_pd['date'] == 20171204]) 
+    print (kl_pd[kl_pd['date'] == 20180604]) 
+    print (kl_pd[kl_pd['date'] == 20180605]) 
+    """
+
     k, d , j = nd.kdj.calc_kdj(kl_pd, 9, 3, 3)
 
-    print ("k = ", k[-10:])
-    print ("d = ", d[-10:])
-    print ("j = ", j[-10:])
-    """
+    my_pd = pd.DataFrame({
+                'KDJ_K': k,
+                'KDJ_D': d,
+                'KDJ_J': j
+        })
+
+    print (my_pd)
 
 
     mfi = nd.mfi.calc_mfi(kl_pd)
@@ -120,7 +133,9 @@ def run_kdj():
 def init_env():
     #环境
     abupy.env.disable_example_env_ipython()
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
+    #bd source have some data error, for example, 002236, some date error, for kdj
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN    
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 

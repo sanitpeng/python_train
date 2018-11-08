@@ -1,0 +1,104 @@
+"""
+如何对所有上市股票进行筛选：买入条件，比方说在9月5日这天从所有上市股票中筛选出KDJ指标中的J值在9月3日小于0，在9月4日J值大于9月3日的J值，选出的股票按成交金额进行排序，买入成交金额前10的股票。卖出条件，当持有的股票当日 J值小于前一天的J值则卖出
+"""
+
+import talib as tl
+def initialize(context):
+    # 定义一个全局变量, 保存要操作的股票
+    # 000001(股票:平安银行)
+    g.security = '000001.XSHE'
+    # 初始化此策略
+    # 设置我们要操作的股票池, 这里我们只操作一支股票
+    set_universe([g.security])
+
+# 每个单位时间(如果按天回测,则每天调用一次,如果按分钟,则每分钟调用一次)调用一次
+def handle_data(context, data):
+    security = g.security
+    
+    #----------- Sample Code --------------------------------------------------/
+    stock = security
+    hData = attribute_history(stock, 100, unit='1d'
+                    , fields=('close', 'volume', 'open', 'high', 'low')
+                    , skip_paused=True
+                    , df=False)
+    volume = hData['volume']
+    volume = np.array(volume, dtype='f8')
+    close = hData['close']
+    open = hData['open']
+    high = hData['high']
+    low = hData['low']
+    
+    kValue, dValue, jValue = KDJ_CN(high, low, close, 9, 3, 3) 
+    rsiValue = RSI_CN(close, 13) 
+    
+    macdDIFF, macdDEA, macd = MACD_CN(close, 12, 26, 9)
+    # 画出上一时间点价格
+    record(kValue=kValue[-1], dValue=dValue[-1], jValue=jValue[-1], rsiValue=rsiValue[-1]
+    , macdDIFF=macdDIFF[-1], macdDEA=macdDEA[-1], macd=macd[-1])
+    #----------- Sample Code --------------------------------------------------/
+    
+    # 取得过去五天的平均价格
+    average_price = data[security].mavg(5, 'close')
+    # 取得上一时间点价格
+    current_price = data[security].close
+    # 取得当前的现金
+    cash = context.portfolio.cash
+
+    # 如果上一时间点价格高出五天平均价1%, 则全仓买入
+    if current_price > 1.01*average_price:
+        # 用所有 cash 买入股票
+        order_value(security, cash)
+        # 记录这次买入
+        log.info("Buying %s" % (security))
+    # 如果上一时间点价格低于五天平均价, 则空仓卖出
+    elif current_price < average_price and context.portfolio.positions[security].sellable_amount > 0:
+        # 卖出所有股票,使这只股票的最终持有量为0
+        order_target(security, 0)
+        # 记录这次卖出
+        log.info("Selling %s" % (security))
+
+# 同花顺和通达信等软件中的SMA
+def SMA_CN(close, timeperiod) :
+    close = np.nan_to_num(close)
+    return reduce(lambda x, y: ((timeperiod - 1) * x + y) / timeperiod, close)
+    
+# 同花顺和通达信等软件中的KDJ
+def KDJ_CN(high, low, close, fastk_period, slowk_period, fastd_period) :
+    kValue, dValue = tl.STOCHF(high, low, close, fastk_period, fastd_period=1, fastd_matype=0)
+    
+    kValue = np.array(map(lambda x : SMA_CN(kValue[:x], slowk_period), range(1, len(kValue) + 1)))
+    dValue = np.array(map(lambda x : SMA_CN(kValue[:x], fastd_period), range(1, len(kValue) + 1)))
+    
+    jValue = 3 * kValue - 2 * dValue
+    
+    func = lambda arr : np.array([0 if x < 0 else (100 if x > 100 else x) for x in arr])
+    
+    kValue = func(kValue)
+    dValue = func(dValue)
+    jValue = func(jValue)
+    return kValue, dValue, jValue
+
+# 同花顺和通达信等软件中的RSI
+def RSI_CN(close, timeperiod) :
+    diff = map(lambda x, y : x - y, close[1:], close[:-1])
+    diffGt0 = map(lambda x : 0 if x < 0 else x, diff)
+    diffABS = map(lambda x : abs(x), diff)
+    diff = np.array(diff)
+    diffGt0 = np.array(diffGt0)
+    diffABS = np.array(diffABS)
+    diff = np.append(diff[0], diff)
+    diffGt0 = np.append(diffGt0[0], diffGt0)
+    diffABS = np.append(diffABS[0], diffABS)
+    rsi = map(lambda x : SMA_CN(diffGt0[:x], timeperiod) / SMA_CN(diffABS[:x], timeperiod) * 100
+            , range(1, len(diffGt0) + 1) )
+    
+    return np.array(rsi)
+    
+
+# 同花顺和通达信等软件中的MACD
+def MACD_CN(close, fastperiod, slowperiod, signalperiod) :
+    macdDIFF, macdDEA, macd = tl.MACDEXT(close, fastperiod=fastperiod, fastmatype=1, slowperiod=slowperiod, slowmatype=1, signalperiod=signalperiod, signalmatype=1)
+    macd = macd * 2
+    return macdDIFF, macdDEA, macd 
+    
+

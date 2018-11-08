@@ -36,19 +36,13 @@ from abupy import AbuPickKDJ
 from abupy import AbuFactorBuyKDJ
 
 from abupy import EMarketDataFetchMode
+from abupy import EMarketSourceType
+from abupy import EMarketTargetType
+from abupy import EDataCacheType
 
 warnings.filterwarnings('ignore')
 sns.set_context(rc={'figure.figsize': (14, 7)})
 
-# 使用沙盒数据，目的是和书中一样的数据环境
-#abupy.env.enable_example_env_ipython()
-
-
-
-# 开始配置真实环境，
-abupy.env.disable_example_env_ipython()
-abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
-#abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
 #kl_pd = ABuSymbolPd.make_kl_df('600309', n_folds=2)
 #STOCK_NUM = '600309'
@@ -304,6 +298,62 @@ def sample_817():
     直接达不到选股的min_xd，所以这里其实可以`abupy.env.disable_example_env_ipython()`关闭沙盒环境，直接上真实数据。
 """
 
+from abupy import ABuFactorBuyCurveProjection
+
+def pick_time_CurveProjection():
+    # buy factors
+    buy_factors = [{'class': ABuFactorBuyCurveProjection}]
+
+
+    #sell factors
+    sell_factor1 = {'class': AbuFactorSellKDJ}
+
+    """
+    # 趋势跟踪策略止盈要大于止损设置值，这里0.5，3.0
+    sell_factor2 = {'stop_loss_n': 0.5, 'stop_win_n': 3.0, 'class': AbuFactorAtrNStop}
+    # 暴跌止损卖出因子形成dict
+    sell_factor3 = {'class': AbuFactorPreAtrNStop, 'pre_atr_n': 1.0}
+    # 保护止盈卖出因子组成dict
+    sell_factor4 = {'class': AbuFactorCloseAtrNStop, 'close_atr_n': 1.5}
+    # 四个卖出因子同时生效，组成sell_factors
+    sell_factors = [sell_factor1, sell_factor2, sell_factor3, sell_factor4]
+    """
+
+    sell_factors = [sell_factor1]
+
+
+    #A股，永不可能，相当于不丢弃单子，这里缺省使用的均值滑点
+    abupy.slippage.sbm.g_open_down_rate = 0.11
+
+    benchmark = AbuBenchmark()
+    capital = AbuCapital(STOCK_CAPITAL, benchmark)
+    kl_pd_manager = AbuKLManager(benchmark, capital)
+
+    # 获取symbol的交易数据
+    kl_pd = kl_pd_manager.get_pick_time_kl_pd('002236')
+    #kl_pd = kl_pd_manager.get_pick_time_kl_pd('600309')
+   
+    """
+    print(kl_pd.columns)
+    print(type(kl_pd.date[0]))
+    return 0
+    """
+
+    abu_worker = AbuPickTimeWorker(capital, kl_pd, benchmark, buy_factors, sell_factors)
+    abu_worker.fit()
+
+
+    print (abu_worker.orders)
+
+    orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True)
+
+
+
+    ABuTradeExecute.apply_action_to_capital(capital, action_pd, kl_pd_manager)
+    capital.capital_pd.capital_blance.plot()
+    plt.show()
+
+
 
 def pick_time_kdj():
     # buy factors 
@@ -522,8 +572,22 @@ def sample_823():
     print('len(cs):', len(cs))
     print('cs:\n', cs)
 
+def init_env():
+    #环境
+    abupy.env.disable_example_env_ipython()
+    #bd source have some data error, for example, 002236, some date error, for kdj
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
+    abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
+    abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
+
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+
 
 if __name__ == "__main__":
+    init_env()
     # sample_811()
     # sample_812()
     # sample_813()
@@ -538,4 +602,5 @@ if __name__ == "__main__":
     # sample_822()
     # sample_823()
     # pick_stock_kdj()
-    pick_time_kdj()
+    # pick_time_kdj()
+    pick_time_CurveProjection()
