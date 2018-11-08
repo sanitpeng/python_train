@@ -67,6 +67,7 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
         d_value = self.kdj.KDJ_D[self.today_ind]
         j_value = self.kdj.KDJ_J[self.today_ind]
 
+
         
         if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
             # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买

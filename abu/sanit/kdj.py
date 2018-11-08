@@ -67,9 +67,10 @@ stock_pick.choice_symbols: ['sz002502', 'sz002751', 'sz002680', 'sz000040', 'sz0
 
 def pick_stock_by_kdj(show=True):
 
-    """
     #choice_symbols = ['002236']
-    #choice_symbols = ['600309']
+    #choice_symbols = ['sh601118']
+    #choice_symbols = ['sz002502', 'sz002751', 'sz002680', 'sz000040', 'sz002323', 'sh601009', 'sh600800', 'sz300510', 'sh600122', 'sz000538', 'sz000534', 'sz200761', 'sz002411', 'sz002301', 'sz300197', 'sz002485', 'sz300237', 'sz002450', 'sz002857', 'sh603828', 'sz000981', 'sz002665', 'sz300538', 'sh600688', 'sz000545', 'sh603031', 'sz000979', 'sz002408', 'sz300362', 'sz002602', 'sz300178', 'sz300280', 'sz002719', 'sz002711', 'sh600892', 'sz300324', 'sz002769', 'sz002369', 'sz300028', 'sh601118']
+
     # 选股都会是数量比较多的情况比如全市场股票
     choice_symbols = None
 
@@ -80,20 +81,16 @@ def pick_stock_by_kdj(show=True):
                                     choice_symbols=choice_symbols,
                                     stock_pickers=stock_pickers)
     stock_pick.fit()
-    """
 
-    # 打印最后的选股结果
-    choice_symbols = ['sz002502', 'sz002751', 'sz002680', 'sz000040', 'sz002323', 'sh601009', 'sh600800', 'sz300510', 'sh600122', 'sz000538', 'sz000534', 'sz200761', 'sz002411', 'sz002301', 'sz300197', 'sz002485', 'sz300237', 'sz002450', 'sz002857', 'sh603828', 'sz000981', 'sz002665', 'sz300538', 'sh600688', 'sz000545', 'sh603031', 'sz000979', 'sz002408', 'sz300362', 'sz002602', 'sz300178', 'sz300280', 'sz002719', 'sz002711', 'sh600892', 'sz300324', 'sz002769', 'sz002369', 'sz300028', 'sh601118']
+    choiced_symbols = stock_pick.choice_symbols
 
     if show == True:
-        #print ('stock_pick.choice_symbols:', stock_pick.choice_symbols)
-        #for symbol in stock_pick.choice_symbols:
-        #print ('stock_pick.choice_symbols:', stock_pick.choice_symbols)
-        for symbol in choice_symbols:
+        for symbol in choiced_symbols:
             stock_info = query_stock_info(symbol)
             if stock_info is None or stock_info.empty:
                 logging.info(symbol, "stock_info is none or empty")
                 continue
+
             print (stock_info.co_name.values[0], stock_info.symbol.values[0], 
                 stock_info.industry.values[0], stock_info.exchange.values[0])
 

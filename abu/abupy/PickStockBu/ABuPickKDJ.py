@@ -48,6 +48,11 @@ class AbuPickKDJ(AbuPickStockBase):
 
         #use last day 
         v = j[-1]
+
+        #去除掉停牌的股票
+        volume = kl_pd['volume'][-1]
+        if volume == 0 :
+            return False        
        
         # 根据参数进行条件判断
         if v < self.j_threshold:

@@ -63,7 +63,7 @@ class AbuFactorSellKDJ(AbuFactorSellBase):
         for order in orders:
             if j_value >= self.j_threshold:
                 #print(order)
-                #print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
+                print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
                 # 只要超过self.sell_n即卖出
                 #self.sell_today(order) if self.is_sell_today else self.sell_tomorrow(order)
                 self.sell_tomorrow(order)
