@@ -102,12 +102,18 @@ def run_kdj():
 
     print (kl_pd)
 
+    """
     k, d , j = nd.kdj.calc_kdj(kl_pd, 9, 3, 3)
 
     print ("k = ", k[-10:])
     print ("d = ", d[-10:])
     print ("j = ", j[-10:])
+    """
 
+
+    mfi = nd.mfi.calc_mfi(kl_pd)
+    
+    print (mfi)
 
 
 
@@ -118,8 +124,9 @@ def init_env():
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN    
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
-    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
     
 def download_all_data():
@@ -138,5 +145,6 @@ def download_all_data():
 
 if __name__ == "__main__":
     init_env()
-    pick_stock_by_kdj()
+    run_kdj()
+    #pick_stock_by_kdj()
     #download_all_data()

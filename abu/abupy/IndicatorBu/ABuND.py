@@ -6,6 +6,7 @@ from . import ABuNDMa as ma
 from . import ABuNDMacd as macd
 from . import ABuNDRsi as rsi
 from . import ABuNDKdj as kdj
+from . import ABuNDMfi as mfi
 
 __all__ = [
     'atr',
@@ -13,5 +14,6 @@ __all__ = [
     'ma',
     'macd',
     'rsi',
-    'kdj'
+    'kdj',
+    'mfi'
 ]
