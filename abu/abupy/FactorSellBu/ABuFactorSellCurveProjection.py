@@ -47,6 +47,8 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         })
 
         print (self._param_pd)
+        self.mfi_sell_indicate = 0
+        self.kdj_sell_indicate = 0
 
 
 
@@ -71,10 +73,24 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
 
         if j_value >= self.j_threshold:
             print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
-            print (self._param_pd.MFI[self.today_ind - 5:self.today_ind + 5])
+            #print (self._param_pd.MFI[self.today_ind - 5:self.today_ind + 5])
+            print("********mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
+            self.kdj_sell_indicate = self.kdj_sell_indicate + 1
 
-            if (mfi > self.mfi_threshold):
-                return True
+        if (mfi > self.mfi_threshold):
+            print (self._param_pd.MFI[self.today_ind])
+            #print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
+            print("------mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
+
+            self.mfi_sell_indicate = self.mfi_sell_indicate + 1
+
+
+        if (self.mfi_sell_indicate and self.kdj_sell_indicate):
+            print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
+
+            self.mfi_sell_indicate = 0
+            self.kdj_sell_indicate = 0
+            return True
 
         return False
 

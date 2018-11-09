@@ -92,11 +92,8 @@ class ABuFactorBuyCurveProjection(AbuFactorBuyBase, BuyCallMixin):
             
 
         if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
-            #print (today)
             print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
-
-
-            print (self._param_pd.MFI[self.today_ind - 5:self.today_ind + 5])
+            #print (self._param_pd.MFI[self.today_ind - 5:self.today_ind + 5])
             if (mfi < self.mfi_threshold) :
                 return True
 
