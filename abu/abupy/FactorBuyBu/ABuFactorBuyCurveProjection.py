@@ -63,6 +63,7 @@ class ABuFactorBuyCurveProjection(AbuFactorBuyBase, BuyCallMixin):
         #buld the symbol's pd
         k, d, j = ABuNDKdj.calc_kdj(self.kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
         mfi = ABuNDMfi.calc_mfi(self.kl_pd)
+
         self._param_pd = pd.DataFrame({
                 'KDJ_K': k,
                 'KDJ_D': d,

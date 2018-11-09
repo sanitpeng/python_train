@@ -13,6 +13,7 @@ import abupy
 from abupy import AbuFactorBuyBreak
 from abupy import AbuFactorSellBreak
 from abupy import AbuFactorSellKDJ
+from abupy import AbuFactorSellCurveProjection
 from abupy import AbuFactorAtrNStop
 from abupy import AbuFactorPreAtrNStop
 from abupy import AbuFactorCloseAtrNStop
@@ -306,15 +307,22 @@ def pick_time_CurveProjection():
         'mfi_threshold':20,
         'k_threshold':50,
         'd_threshold':50,
-        'j_threshold':50,
+        'j_threshold':50
         }]
 
 
     #sell factors
-    #sell_factor1 = {'class': AbuFactorSellKDJ}
-    #sell_factors = [sell_factor1]
+    #sell_factor1 = {'class': AbuFactorSellCurveProjection}
 
+    sell_factor1 = {'class': AbuFactorSellCurveProjection,
+        'mfi_threshold':80,
+        'k_threshold':50,
+        'd_threshold':50,
+        'j_threshold':100
+        }
+    sell_factors = [sell_factor1]
 
+    """
     # 120天向下突破为卖出信号
     sell_factor1 = {'xd': 120, 'class': AbuFactorSellBreak}
     # 趋势跟踪策略止盈要大于止损设置值，这里0.5，3.0
@@ -325,7 +333,7 @@ def pick_time_CurveProjection():
     sell_factor4 = {'class': AbuFactorCloseAtrNStop, 'close_atr_n': 1.5}
     # 四个卖出因子同时生效，组成sell_factors
     sell_factors = [sell_factor1, sell_factor2, sell_factor3, sell_factor4]
-
+    """
 
 
     #A股，永不可能，相当于不丢弃单子，这里缺省使用的均值滑点
@@ -338,6 +346,8 @@ def pick_time_CurveProjection():
     # 获取symbol的交易数据
     kl_pd = kl_pd_manager.get_pick_time_kl_pd('002236')
     #kl_pd = kl_pd_manager.get_pick_time_kl_pd('600309')
+    #kl_pd = kl_pd_manager.get_pick_time_kl_pd('601398')
+    #kl_pd = kl_pd_manager.get_pick_time_kl_pd('601939')
    
     """
     print(kl_pd.columns)
