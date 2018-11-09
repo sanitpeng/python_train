@@ -302,13 +302,21 @@ from abupy import ABuFactorBuyCurveProjection
 
 def pick_time_CurveProjection():
     # buy factors
-    buy_factors = [{'class': ABuFactorBuyCurveProjection}]
+    buy_factors = [{'class': ABuFactorBuyCurveProjection, 
+        'mfi_threshold':20,
+        'k_threshold':50,
+        'd_threshold':50,
+        'j_threshold':50,
+        }]
 
 
     #sell factors
-    sell_factor1 = {'class': AbuFactorSellKDJ}
+    #sell_factor1 = {'class': AbuFactorSellKDJ}
+    #sell_factors = [sell_factor1]
 
-    """
+
+    # 120天向下突破为卖出信号
+    sell_factor1 = {'xd': 120, 'class': AbuFactorSellBreak}
     # 趋势跟踪策略止盈要大于止损设置值，这里0.5，3.0
     sell_factor2 = {'stop_loss_n': 0.5, 'stop_win_n': 3.0, 'class': AbuFactorAtrNStop}
     # 暴跌止损卖出因子形成dict
@@ -317,9 +325,7 @@ def pick_time_CurveProjection():
     sell_factor4 = {'class': AbuFactorCloseAtrNStop, 'close_atr_n': 1.5}
     # 四个卖出因子同时生效，组成sell_factors
     sell_factors = [sell_factor1, sell_factor2, sell_factor3, sell_factor4]
-    """
 
-    sell_factors = [sell_factor1]
 
 
     #A股，永不可能，相当于不丢弃单子，这里缺省使用的均值滑点
@@ -344,6 +350,9 @@ def pick_time_CurveProjection():
 
 
     print (abu_worker.orders)
+
+    if (not abu_worker.orders) :
+        return
 
     orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True)
 
@@ -582,8 +591,8 @@ def init_env():
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
-    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
-    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
 
 if __name__ == "__main__":

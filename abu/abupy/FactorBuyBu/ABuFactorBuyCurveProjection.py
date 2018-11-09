@@ -40,11 +40,25 @@ class ABuFactorBuyCurveProjection(AbuFactorBuyBase, BuyCallMixin):
         if 'fastd_period' in kwargs:
             self.fastd_period = kwargs['fastd_period']
 
+        """
+        #thresholds default, for kdj and mfi
+        """
 
-        self.k_threshold = 50
-        self.d_threshold = 50
+        self.k_threshold = 20 
+        if 'k_threshold' in kwargs:
+            self.k_threshold = kwargs['k_threshold']
+
+        self.d_threshold = 30
+        if 'd_threshold' in kwargs:
+            self.d_threshold = kwargs['d_threshold']
+
         self.j_threshold = 0
-       
+        if 'j_threshold' in kwargs:
+            self.j_threshold = kwargs['j_threshold']
+
+        self.mfi_threshold = 20
+        if 'mfi_threshold' in kwargs:
+            self.mfi_threshold = kwargs['mfi_threshold']
 
         #buld the symbol's pd
         k, d, j = ABuNDKdj.calc_kdj(self.kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
@@ -82,7 +96,7 @@ class ABuFactorBuyCurveProjection(AbuFactorBuyBase, BuyCallMixin):
 
 
             print (self._param_pd.MFI[self.today_ind - 5:self.today_ind + 5])
-            if (mfi < 25) :
+            if (mfi < self.mfi_threshold) :
                 return True
 
         return False
