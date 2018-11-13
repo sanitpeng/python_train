@@ -15,6 +15,7 @@ from .ABuFactorBuyBase import AbuFactorBuyBase, BuyCallMixin
 from ..IndicatorBu.ABuNDMa import calc_ma_from_prices, calc_ma
 from ..CoreBu.ABuPdHelper import pd_resample
 from ..TLineBu.ABuTL import AbuTLine
+from ..UtilBu import ABuRegUtil
 
 __author__ = 'sanit.peng'
 __weixin__ = 'sanit'
@@ -95,6 +96,24 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         return highs, lows
 
 
+    def _weight(self):
+        print(self._degs)
+        print(self._steps)
+        
+        degs = self._degs
+        steps = self._steps
+
+        for i in range(0, len(degs)):
+            k = degs[i] / steps[i]
+            print ("k = ", k)
+
+        """
+        k = deg / step
+
+        step = deg / k
+
+        """
+        print (self._slices)
 
     def calc_trend_weight(self):
 
@@ -102,9 +121,33 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         ma_array = self._calc_ma(self.ma_period)
         #print(ma_array)
 
+        #根据拐点切片数据
         self._peaks, self._slices = self.split_by_peak(ma_array, self.kl_pd)
 
         print("symbol 's ma(%d) is sliced in %d slices" % (self.ma_period, len(self._slices)))
+
+
+        #计算每段数据的斜率等数据
+        degs = np.array([])
+
+        for slice in self._slices:
+            close_deg = ABuRegUtil.calc_regress_deg(slice.close.values, False)
+            ma_deg =    ABuRegUtil.calc_regress_deg(slice.ma.values, False)
+            degs = np.append(degs, close_deg) 
+
+            print('close 趋势角度:' + str(close_deg))
+            print('ma 趋势角度:' + str(ma_deg))
+
+        self._degs = degs
+      
+        #计算步长
+        steps = np.array([]) 
+        for i in range(0,len(self._peaks) - 1):
+            step = self._peaks[i+1] - self._peaks[i]
+            steps = np.append(steps, step)
+        self._steps = steps
+
+        self._weight()
 
 
     def split_by_peak(self, wave, source_pd = None):
@@ -137,8 +180,11 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
             slice = source_pd.iloc[peaks[i] : peaks[i+1]]
             slices.append(slice)
 
-        #print(slices);
-
+        """
+        print(source_pd)
+        print(slices);
+        """
+        
         return peaks, slices
 
 
