@@ -86,15 +86,17 @@ class ABuFactorBuyCurveProjection(AbuFactorBuyBase, BuyCallMixin):
         j_value = self._param_pd.KDJ_J[self.today_ind]
         mfi = self._param_pd.MFI[self.today_ind]
        
-
+        """
+        # debug code, and example for iloc
         if (self.kl_pd.iloc[self.today_ind].date == 20180706) :
             print (ABuDateUtil.fmt_date(today.date), '(k, d, j, mfi) = (%f, %f, %f, %f) ' %(k_value, d_value, j_value, mfi))
-            
-
+        """
+    
         if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
-            print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
+            #print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
             #print (self._param_pd.MFI[self.today_ind - 5:self.today_ind + 5])
             if (mfi < self.mfi_threshold) :
+                print("+++ Buy stock at ", ABuDateUtil.fmt_date(today.date), "(j, mfi) = ", j_value, mfi)
                 return True
 
         return False

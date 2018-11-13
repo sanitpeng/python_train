@@ -86,18 +86,25 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
 
 
         if (self.mfi_sell_indicate and self.kdj_sell_indicate):
-            print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
 
             self.mfi_sell_indicate = 0
             self.kdj_sell_indicate = 0
+            print("--- Sell stock at ", ABuDateUtil.fmt_date(today.date), "(j, mfi) = ", j_value, mfi)
+            print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
             return True
 
         return False
 
     def fit_day(self, today, orders):
         
+        print("order len =======", len(orders))
         for order in orders:
+            print("*********", type(order))
+            if order.sell_date != None:
+                continue
             if self.strategy_1(today):
+                print("######## sell tomorrow")
+                print(ABuDateUtil.fmt_date(today.date), order)
                 self.sell_tomorrow(order)
                 #self.sell_today(order) if self.is_sell_today else self.sell_tomorrow(order)
 

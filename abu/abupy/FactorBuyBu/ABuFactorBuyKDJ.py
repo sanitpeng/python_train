@@ -13,16 +13,23 @@ from ..IndicatorBu import ABuNDKdj
 from ..UtilBu import ABuDateUtil
 
 from .ABuFactorBuyBase import AbuFactorBuyBase, AbuFactorBuyXD, BuyCallMixin, BuyPutMixin
+from .ABuFactorBuyMean import AbuMaSplit
 
 __author__ = 'sanit.peng'
 __weixin__ = 'sanit'
 
 
 # noinspection PyAttributeOutsideInit
-class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
+#class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
+class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
     """买入择时类，混入BuyCallMixin，即突破触发买入event"""
 
     def _init_self(self, **kwargs):
+
+        # 注意，如果需要初始化，父类的变量，这里需要显示调用，
+        # by sanit.peng
+        super(AbuFactorBuyKDJ, self)._init_self(**kwargs)
+
         # 不要使用kwargs.pop('xd', 20), 明确需要参数xq
 
         self.fastk_period = 9
@@ -45,14 +52,15 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
 
         #buld the symbol's kdj
         k, d, j = ABuNDKdj.calc_kdj(self.kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
-        self.kdj = pd.DataFrame({
+        self._param_pd = pd.DataFrame({
                 'KDJ_K': k,
                 'KDJ_D': d,
-                'KDJ_J': j
+                'KDJ_J': j,
         })
 
 
-        #print (self.kl_pd)
+        self.calc_trend_weight()
+
 
         # 在输出生成的orders_pd中显示的名字
         self.factor_name = '{}:{}'.format(self.__class__.__name__, self.j_threshold )
@@ -63,10 +71,9 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
         """
 
         #use today
-        k_value = self.kdj.KDJ_K[self.today_ind]
-        d_value = self.kdj.KDJ_D[self.today_ind]
-        j_value = self.kdj.KDJ_J[self.today_ind]
-
+        k_value = self._param_pd.KDJ_K[self.today_ind]
+        d_value = self._param_pd.KDJ_D[self.today_ind]
+        j_value = self._param_pd.KDJ_J[self.today_ind]
 
         
         if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :

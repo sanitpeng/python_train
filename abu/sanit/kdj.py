@@ -139,9 +139,9 @@ def init_env():
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN    
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
-    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
-    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
     
 def download_all_data():

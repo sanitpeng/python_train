@@ -302,12 +302,16 @@ def sample_817():
 from abupy import ABuFactorBuyCurveProjection
 
 def pick_time_CurveProjection():
+    
+    #仓位控制 100%
+    abupy.beta.atr.g_atr_pos_base = 1.0
+
     # buy factors
     buy_factors = [{'class': ABuFactorBuyCurveProjection, 
-        'mfi_threshold':20,
+        'mfi_threshold':50,
         'k_threshold':50,
         'd_threshold':50,
-        'j_threshold':50
+        'j_threshold':0
         }]
 
 
@@ -339,15 +343,15 @@ def pick_time_CurveProjection():
     #A股，永不可能，相当于不丢弃单子，这里缺省使用的均值滑点
     abupy.slippage.sbm.g_open_down_rate = 0.11
 
-    benchmark = AbuBenchmark()
+    benchmark = AbuBenchmark(n_folds = 11)
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
     kl_pd_manager = AbuKLManager(benchmark, capital)
 
     # 获取symbol的交易数据
-    kl_pd = kl_pd_manager.get_pick_time_kl_pd('002236')
+    #kl_pd = kl_pd_manager.get_pick_time_kl_pd('002236')
     #kl_pd = kl_pd_manager.get_pick_time_kl_pd('600309')
     #kl_pd = kl_pd_manager.get_pick_time_kl_pd('601398')
-    #kl_pd = kl_pd_manager.get_pick_time_kl_pd('601939')
+    kl_pd = kl_pd_manager.get_pick_time_kl_pd('601939')
    
     """
     print(kl_pd.columns)
@@ -376,7 +380,7 @@ def pick_time_CurveProjection():
 
 def pick_time_kdj():
     # buy factors 
-    buy_factors = [{'class': AbuFactorBuyKDJ}]
+    buy_factors = [{'class': AbuFactorBuyKDJ, 'ma_period': 30}]
     
 
     #sell factors
@@ -411,14 +415,13 @@ def pick_time_kdj():
 
     print (abu_worker.orders)
 
+
     orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True)
 
-    
 
     ABuTradeExecute.apply_action_to_capital(capital, action_pd, kl_pd_manager)
     capital.capital_pd.capital_blance.plot()
     plt.show()
-
 
 
 def pick_stock_kdj():
@@ -595,18 +598,20 @@ def init_env():
     #环境
     abupy.env.disable_example_env_ipython()
     #bd source have some data error, for example, 002236, some date error, for kdj
-    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
-    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
-    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
 
 if __name__ == "__main__":
     init_env()
+    # from abupy import  ABuSymbolPd
+    # kl_pd = ABuSymbolPd.make_kl_df('601939', n_folds=11)
     # sample_811()
     # sample_812()
     # sample_813()
@@ -621,5 +626,5 @@ if __name__ == "__main__":
     # sample_822()
     # sample_823()
     # pick_stock_kdj()
-    # pick_time_kdj()
-    pick_time_CurveProjection()
+    pick_time_kdj()
+    # pick_time_CurveProjection()

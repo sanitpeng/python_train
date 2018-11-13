@@ -9,6 +9,7 @@ from .ABuFactorBuyDM import AbuDoubleMaBuy
 from .ABuFactorBuyTrend import AbuUpDownTrend, AbuDownUpTrend, AbuUpDownGolden
 from .ABuFactorBuyKDJ import AbuFactorBuyKDJ
 from .ABuFactorBuyCurveProjection import ABuFactorBuyCurveProjection
+from .ABuFactorBuyMean import AbuMaSplit
 
 __all__ = [
     'AbuFactorBuyBase',
@@ -30,5 +31,6 @@ __all__ = [
     'AbuDownUpTrend',
     'AbuUpDownGolden',
     'AbuFactorBuyKDJ',
-    'ABuFactorBuyCurveProjection'
+    'ABuFactorBuyCurveProjection',
+    'AbuMaSplit'
 ]
