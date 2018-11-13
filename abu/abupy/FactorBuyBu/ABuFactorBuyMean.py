@@ -49,44 +49,97 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
             采样的周期内的平均变化幅度 > 0.12的周期做为slow的取值
         """
         ma_array = calc_ma(self.kl_pd.close, time_period) 
+        
+        #why nan_to_num is no use, by sanit.peng
+        #np.nan_to_num(ma_array)
+        ma_array[np.isnan(ma_array) == True] = 0
 
         self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma', ma_array)  
-
-        print(self.kl_pd)
+        #print(self.kl_pd)
 
         return ma_array
 
-    def _detect_peaks_stub(self, ma_pd):
-        
-        NUM = 3
-        splits = None;
-        len = ma_pd.shape[0]
+    def _detect_peaks(self, ma_array):
+    
+        # sample codes from https://github.com/MonsieurV/py-findpeaks
+        # py-findpeaks/tests/lows_and_highs.py
+        # install import peakutils, pip install PeakUtils
 
-        len = (len / NUM)
+        import peakutils.peak
 
-        #print (ma_pd)
+        cb = np.array(ma_array.tolist())
 
-        """
-        splits = ma_pd[0:len]
+        #print(type(ma_array), type(ma_array.tolist()), type(np.array(ma_array.tolist())), type(cb)) 
 
-        for i in rang(1, NUM-1):
-            splits.append(i*len, (i+1)*len)
+        threshold = 0.02
+        min_dist = 150
 
-        print(splits)
-        return splits
-        """
-        return None
+
+        print('Detect high peaks with minimum height and distance filters.')
+        highs = peakutils.peak.indexes(
+            np.array(cb),
+            thres=threshold/max(cb), min_dist=min_dist
+        )
+        print('High peaks are: %s' % (highs))
+
+        print('Detect low peaks with minimum height and distance filters.')
+        # Invert the signal.
+        cbInverted = cb * -1
+
+        lows = peakutils.peak.indexes(
+            np.array(cbInverted),
+            thres=threshold/max(cbInverted), min_dist=min_dist
+        )
+        print('Low peaks are: %s' % (lows))        
+
+        return highs, lows
 
 
 
     def calc_trend_weight(self):
+
+        #计算均线
+        ma_array = self._calc_ma(self.ma_period)
+        #print(ma_array)
+
+        self._peaks, self._slices = self.split_by_peak(ma_array, self.kl_pd)
+
+        print("symbol 's ma(%d) is sliced in %d slices" % (self.ma_period, len(self._slices)))
+
+
+    def split_by_peak(self, wave, source_pd = None):
+
+        #找出拐点,包含高点和低点
+        highs, lows = self._detect_peaks(wave)
         
-        ma_pd = self._calc_ma(self.ma_period)
-        peaks = self._detect_peaks_stub(ma_pd)
+        peaks = np.append(highs, lows)
+        peaks = np.sort(peaks)
 
-         
 
-        return
+        #why ??
+        #if ((source_pd == None) or (source_pd.empty)):
+        if (source_pd.empty):
+            return peaks, None
+
+
+        if (peaks[0] > 0):
+            peaks = np.insert(peaks, 0, [0])
+
+        if (peaks[-1] < len(source_pd)):
+            peaks = np.append(peaks, [len(source_pd)])
+
+        print("peak's is ", peaks)
+
+        slices = []
+        
+        for i in range(0, len(peaks) - 1):
+            #print(peaks[i] , peaks[i+1])
+            slice = source_pd.iloc[peaks[i] : peaks[i+1]]
+            slices.append(slice)
+
+        #print(slices);
+
+        return peaks, slices
 
 
     def fit_day(self, today):

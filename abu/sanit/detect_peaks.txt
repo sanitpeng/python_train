@@ -1,4 +1,6 @@
 http://nbviewer.jupyter.org/github/demotu/BMC/blob/master/notebooks/DetectPeaks.ipynb
 https://github.com/MonsieurV/py-findpeaks
 https://stackoverflow.com/questions/25571260/scipy-signal-find-peaks-cwt-not-finding-the-peaks-accurately
+https://pypi.org/project/PeakUtils/
+pip install PeakUtils
 
