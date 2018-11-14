@@ -137,6 +137,132 @@ def plot_his_trade(orders, kl_pd):
 
     plt.show()
 
+def plot_his_trade_ex(orders, kl_pd, ext_list):
+    """
+    可视化绘制AbuOrder对象，绘制交易买入时间，卖出时间，价格，生效因子等
+    :param orders: AbuOrder对象序列
+    :param kl_pd: 金融时间序列，pd.DataFrame对象
+    :return:
+    """
+
+    if not g_enable_his_trade:
+        return
+
+    # 拿出时间序列中最后一个，做为当前价格
+    now_price = kl_pd.iloc[-1].close
+    all_pd = kl_pd
+
+    # ipython环境绘制在多个子画布上，普通python环境绘制一个show一个
+    draw_multi_ax = ABuEnv.g_is_ipython
+
+    # 根据绘制环境设置子画布数量
+    ax_cnt = 1 if not draw_multi_ax else len(orders)
+    # 根据子画布数量设置画布大小
+    plt.figure(figsize=(14, 8 * ax_cnt))
+    fig_dims = (ax_cnt, 1)
+
+    with AbuProgress(len(orders), 0) as pg:
+        for index, order in enumerate(orders):
+            pg.show(index + 1)
+            # 迭代所有orders，对每一个AbuOrder对象绘制交易细节
+            mask_date = all_pd['date'] == order.buy_date
+            st_key = all_pd[mask_date]['key']
+
+            if order.sell_type == 'keep':
+                rv_pd = all_pd.iloc[st_key.values[0]:, :]
+            else:
+                mask_sell_date = all_pd['date'] == order.sell_date
+                st_sell_key = all_pd[mask_sell_date]['key']
+                rv_pd = all_pd.iloc[st_key.values[0]:st_sell_key.values[0], :]
+
+            if draw_multi_ax:
+                # ipython环境绘制在多个子画布上
+                plt.subplot2grid(fig_dims, (index, 0))
+            # 绘制价格曲线
+            plt.plot(all_pd.index, all_pd['close'], label='close')
+
+
+            #---------------------------------
+            #add by sanit.peng
+            #todo: this code is urge, should be fixed
+            # 画均线
+            plt.plot(all_pd.index, all_pd['ma'], label='ma')
+            # 可视化拐点，和斜率
+            peaks = ext_list[0]
+
+            if peaks.size:
+                label = 'peak'
+                label = label + 's' if peaks.size > 1 else label
+                plt.plot(all_pd.index[peaks], all_pd.close[peaks], '+', mfc=None, mec='r', mew=2, ms=8,
+                        label='%d %s' % (peaks.size, label))            
+
+            #--------------------------------
+
+            try:
+                # 填充透明blue, 针对用户一些版本兼容问题进行处理
+                plt.fill_between(all_pd.index, 0, all_pd['close'], color='blue', alpha=.18)
+                if order.sell_type == 'keep':
+                    # 如果单子还没卖出，是否win使用now_price代替sell_price，需＊单子期望的盈利方向
+                    order_win = (now_price - order.buy_price) * order.expect_direction > 0
+                elif order.sell_type == 'win':
+                    order_win = True
+                else:
+                    order_win = False
+                if order_win:
+                    # 盈利的使用红色
+                    plt.fill_between(rv_pd.index, 0, rv_pd['close'], color='red', alpha=.38)
+                else:
+                    # 亏损的使用绿色
+                    plt.fill_between(rv_pd.index, 0, rv_pd['close'], color='green', alpha=.38)
+            except:
+                logging.debug('fill_between numpy type not safe!')
+            # 格式化买入信息标签
+            buy_date_fmt = ABuDateUtil.str_to_datetime(str(order.buy_date), '%Y%m%d')
+            buy_tip = 'buy_price:{:.2f}'.format(order.buy_price)
+
+            # 写买入tip信息
+            plt.annotate(buy_tip, xy=(buy_date_fmt, all_pd['close'].asof(buy_date_fmt) * 2 / 5),
+                         xytext=(buy_date_fmt, all_pd['close'].asof(buy_date_fmt)),
+                         arrowprops=dict(facecolor='red'),
+                         horizontalalignment='left', verticalalignment='top')
+
+            if order.sell_price is not None:
+                # 如果单子卖出，卖出入信息标签使用，收益使用sell_price计算，需＊单子期望的盈利方向
+                sell_date_fmt = ABuDateUtil.str_to_datetime(str(order.sell_date), '%Y%m%d')
+                pft = (order.sell_price - order.buy_price) * order.buy_cnt * order.expect_direction
+                sell_tip = 'sell price:{:.2f}, profit:{:.2f}'.format(order.sell_price, pft)
+            else:
+                # 如果单子未卖出，卖出入信息标签使用，收益使用now_price计算，需＊单子期望的盈利方向
+                sell_date_fmt = ABuDateUtil.str_to_datetime(str(all_pd[-1:]['date'][0]), '%Y%m%d')
+                pft = (now_price - order.buy_price) * order.buy_cnt * order.expect_direction
+                sell_tip = 'now price:{:.2f}, profit:{:.2f}'.format(now_price, pft)
+
+            # 写卖出tip信息
+            plt.annotate(sell_tip, xy=(sell_date_fmt, all_pd['close'].asof(sell_date_fmt) * 2 / 5),
+                         xytext=(sell_date_fmt, all_pd['close'].asof(sell_date_fmt)),
+                         arrowprops=dict(facecolor='green'),
+                         horizontalalignment='left', verticalalignment='top')
+            # 写卖出因子信息
+            plt.annotate(order.sell_type_extra, xy=(buy_date_fmt, all_pd['close'].asof(sell_date_fmt) / 4),
+                         xytext=(buy_date_fmt, all_pd['close'].asof(sell_date_fmt) / 4),
+                         arrowprops=dict(facecolor='yellow'),
+                         horizontalalignment='left', verticalalignment='top')
+
+            # 写买入因子信息
+            if order.buy_factor is not None:
+                plt.annotate(order.buy_factor, xy=(buy_date_fmt, all_pd['close'].asof(sell_date_fmt) / 3),
+                             xytext=(buy_date_fmt, all_pd['close'].asof(sell_date_fmt) / 3),
+                             arrowprops=dict(facecolor='yellow'),
+                             horizontalalignment='left', verticalalignment='top')
+            # title使用时间序列symbol
+            plt.title(order.buy_symbol)
+            if not draw_multi_ax:
+                # ipython环境绘制在多个子画布上，普通python环境绘制一个show一个
+                plt.show()
+
+    plt.show()
+
+
 
 def plot_capital_info(capital_pd, init_cash=-1):
     """

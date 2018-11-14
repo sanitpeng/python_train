@@ -380,7 +380,7 @@ def pick_time_CurveProjection():
 
 def pick_time_kdj():
     # buy factors 
-    buy_factors = [{'class': AbuFactorBuyKDJ, 'ma_period': 30}]
+    buy_factors = [{'class': AbuFactorBuyKDJ, 'ma_period': 10}]
     
 
     #sell factors
@@ -403,26 +403,38 @@ def pick_time_kdj():
     #A股，永不可能，相当于不丢弃单子，这里缺省使用的均值滑点
     abupy.slippage.sbm.g_open_down_rate = 0.11
     
-    benchmark = AbuBenchmark()
+    #benchmark = AbuBenchmark()
+    benchmark = AbuBenchmark(n_folds = 2)
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
     kl_pd_manager = AbuKLManager(benchmark, capital)
 
     # 获取symbol的交易数据
     kl_pd = kl_pd_manager.get_pick_time_kl_pd(STOCK_NUM)
+    #kl_pd = kl_pd_manager.get_pick_time_kl_pd('600309')
     abu_worker = AbuPickTimeWorker(capital, kl_pd, benchmark, buy_factors, sell_factors)
     abu_worker.fit()
-
-
     print (abu_worker.orders)
+    
+    print("----------------------------")
+    
+    factor = abu_worker.buy_factors[0]
+    factor_summary = list()
+    factor_summary.append(factor._peaks)
+    factor_summary.append(factor._slices)
+    factor_summary.append(factor._degs)
+    factor_summary.append(factor._steps)
+    #print(factor_summary)
 
+    
+    orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
+        ext_list = factor_summary)
+    #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False)
 
-    orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True)
-
-
+    """
     ABuTradeExecute.apply_action_to_capital(capital, action_pd, kl_pd_manager)
     capital.capital_pd.capital_blance.plot()
     plt.show()
-
+    """
 
 def pick_stock_kdj():
     abupy.env.disable_example_env_ipython()

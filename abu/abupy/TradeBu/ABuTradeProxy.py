@@ -258,7 +258,8 @@ def find_unique_symbol(order_pd, same_rule=EOrderSameRule.ORDER_SAME_BSPD):
     return order_pd[same_mark == 0]
 
 
-def trade_summary(orders, kl_pd, draw=False, show_info=True):
+#def trade_summary(orders, kl_pd, draw=False, show_info=True):
+def trade_summary(orders, kl_pd, draw=False, show_info=True, ext_list = None):
     """
     主要将AbuOrder对象序列转换为pd.DataFrame对象orders_pd，以及将
     交易单子时间序列转换交易行为顺序序列，绘制每笔交易的细节交易图，以及
@@ -277,7 +278,13 @@ def trade_summary(orders, kl_pd, draw=False, show_info=True):
     summary = ''
     if draw:
         # 绘制每笔交易的细节交易图
-        ABuTradeDrawer.plot_his_trade(orders, kl_pd)
+        # add by sanit.peng
+        # todo: should be fixed, this codes is ugly
+        if (ext_list == None):
+            ABuTradeDrawer.plot_his_trade(orders, kl_pd)
+        else:
+            ABuTradeDrawer.plot_his_trade_ex(orders, kl_pd, ext_list)
+            
 
     if show_info:
         # simple的意思是没有计算交易费用
@@ -307,3 +314,42 @@ def trade_summary(orders, kl_pd, draw=False, show_info=True):
         summary += win_rate
 
     return orders_pd, action_pd, summary
+
+"""
+感觉不应该在这里实现，感觉应该在对，BuyFactor, 做一个Wrap, 
+参考AbuLeastPolyWrap，这里先实现功能
+
+def trade_factor_summary(factors, draw=False):    
+    
+    #取得买入或卖出因子产生的数据，方便后期进行可视化
+    #by sanit.peng
+    if factors is None:
+        return
+
+    for factor in factors:
+        if factor is None:
+            continue
+        ''' 
+        if 'class' not in factor:
+            # 必须要有需要实例化的类信息
+            raise ValueError('factor class key must name class !!!')
+        '''
+
+        #if isinstance(factor, AbuFactorBuyMean):
+        if isinstance(factor, AbuFactorBuyBase):
+            # 因子对象类型检测
+            factor_summary = list()
+            factor_summary.append(factor._peaks)
+            factor_summary.append(factor._slices)
+            factor_summary.append(factor._degs)
+            factor_summary.append(factor._steps)
+            if (draw):
+                pass
+
+            return factor_summary;
+                
+            
+        #目前只支持AbuFactorBuyMean
+
+"""    
+

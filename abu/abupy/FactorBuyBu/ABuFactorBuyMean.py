@@ -72,8 +72,10 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
 
         #print(type(ma_array), type(ma_array.tolist()), type(np.array(ma_array.tolist())), type(cb)) 
 
-        threshold = 0.02
-        min_dist = 150
+        #threshold = 0.02
+        #min_dist = 150
+        threshold = 1
+        min_dist = 30
 
 
         print('Detect high peaks with minimum height and distance filters.')
@@ -113,7 +115,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         step = deg / k
 
         """
-        print (self._slices)
+        #print (self._slices)
 
     def calc_trend_weight(self):
 
@@ -169,7 +171,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
             peaks = np.insert(peaks, 0, [0])
 
         if (peaks[-1] < len(source_pd)):
-            peaks = np.append(peaks, [len(source_pd)])
+            peaks = np.append(peaks, [len(source_pd) - 1])
 
         print("peak's is ", peaks)
 
