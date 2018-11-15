@@ -33,6 +33,9 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         self.ma_period = 30
         if 'ma_period' in kwargs:
             self.ma_period = kwargs['ma_period']        
+        self.bear_bull_period = 60
+        if 'bear_bull_period' in kwargs:
+            self.bear_bull_period = kwargs['bear_bull_period']        
 
         # 在输出生成的orders_pd中显示的名字
         self.factor_name = '{}:period={}'.format(self.__class__.__name__, self.ma_period)
@@ -40,14 +43,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
 
     def _calc_ma(self, time_period):
         """
-            动态决策慢线的值，规则如下：
-
-            切片最近一段时间的金融时间序列，对金融时间序列进行变换周期重新采样，
-            对重新采样的结果进行pct_change处理，对pct_change序列取abs绝对值，
-            对pct_change绝对值序列取平均，即算出重新采样的周期内的平均变化幅度，
-
-            上述的变换周期由10， 15，20，30....进行迭代, 直到计算出第一个重新
-            采样的周期内的平均变化幅度 > 0.12的周期做为slow的取值
+            计算均线
         """
         ma_array = calc_ma(self.kl_pd.close, time_period) 
         
@@ -55,8 +51,6 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         #np.nan_to_num(ma_array)
         ma_array[np.isnan(ma_array) == True] = 0
 
-        self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma', ma_array)  
-        #print(self.kl_pd)
 
         return ma_array
 
@@ -105,23 +99,43 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         degs = self._degs
         steps = self._steps
 
+        for i, deg in enumerate(degs):
+            #验证下斜率公式
+            #y = kx + b, b 为切片开始点的值, k = tanα, α是弧度，先将角度转化成弧度
+            b = self._slices[i].close[0]
+            x = self._steps[i]
+            k = math.tan(np.deg2rad(self._degs[i]))
+            y = k * x + b
+            y1 = self._slices[i].close[-1]
+            
+            print("y = kx + b, (k , x, b)", k, x, b)
+            print("y = , y'= ", y, y1)
+
         for i in range(0, len(degs)):
-            k = degs[i] / steps[i]
-            print ("k = ", k)
+            v = degs[i] / steps[i]
+            print ("v = ", v)
 
         """
-        k = deg / step
-
+        v = deg / step
         step = deg / k
-
         """
+
+
         #print (self._slices)
 
     def calc_trend_weight(self):
 
         #计算均线
+        #计算牛熊线 60日均线
+        ma_array = self._calc_ma(self.bear_bull_period)
+        self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma_bear_bull', ma_array)  
+
+        #计算n日均线
         ma_array = self._calc_ma(self.ma_period)
-        #print(ma_array)
+        self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma', ma_array)  
+
+        print(self.kl_pd)
+        
 
         #根据拐点切片数据
         self._peaks, self._slices = self.split_by_peak(ma_array, self.kl_pd)
