@@ -69,7 +69,8 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         """
         :param today: 当前驱动的交易日金融时间序列数据
         """
-
+        super(AbuFactorBuyKDJ, self).fit_day(today)
+        
         #use today
         k_value = self._param_pd.KDJ_K[self.today_ind]
         d_value = self._param_pd.KDJ_D[self.today_ind]

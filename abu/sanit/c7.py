@@ -67,8 +67,8 @@ def sample_711():
 
     from abupy import ABuRegUtil
     #para set false not draw picture
-    deg = ABuRegUtil.calc_regress_deg(kl_pd.close.values, False)
-    #deg = ABuRegUtil.calc_regress_deg(kl_pd.close.values, True)
+    #deg = ABuRegUtil.calc_regress_deg(kl_pd.close.values, False)
+    deg = ABuRegUtil.calc_regress_deg(kl_pd.close.values, True)
     print('趋势角度:' + str(deg))
 
     plt.show()
@@ -585,12 +585,12 @@ def sample_723():
 
 
 if __name__ == "__main__":
-    # sample_711()
+    sample_711()
     # sample_712_1()
     # sample_712_2()
     # sample_712_3()
     # sample_712_4()
-    sample_713()
+    # sample_713()
     # sample_722_1()
     # sample_722_2()
     # sample_722_3()

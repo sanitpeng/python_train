@@ -404,22 +404,23 @@ def pick_time_kdj():
     abupy.slippage.sbm.g_open_down_rate = 0.11
     
     #benchmark = AbuBenchmark()
-    benchmark = AbuBenchmark(n_folds = 2)
+    benchmark = AbuBenchmark(n_folds = 3)
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
     kl_pd_manager = AbuKLManager(benchmark, capital)
 
     # 获取symbol的交易数据
-    kl_pd = kl_pd_manager.get_pick_time_kl_pd(STOCK_NUM)
+    kl_pd = kl_pd_manager.get_pick_time_kl_pd('002236')
     #kl_pd = kl_pd_manager.get_pick_time_kl_pd('600309')
     abu_worker = AbuPickTimeWorker(capital, kl_pd, benchmark, buy_factors, sell_factors)
     abu_worker.fit()
-    print (abu_worker.orders)
+    #print (abu_worker.orders)
     
-    print("----------------------------")
+    #print("----------------------------")
     
     factor = abu_worker.buy_factors[0]
     factor_summary = list()
     factor_summary.append(factor._peaks)
+    factor_summary.append(factor._bear_bull_peaks)
     factor_summary.append(factor._slices)
     factor_summary.append(factor._degs)
     factor_summary.append(factor._steps)
@@ -428,6 +429,7 @@ def pick_time_kdj():
     
     orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
         ext_list = factor_summary)
+    #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False, 
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False)
 
     """

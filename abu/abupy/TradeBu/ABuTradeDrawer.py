@@ -186,6 +186,7 @@ def plot_his_trade_ex(orders, kl_pd, ext_list):
             #add by sanit.peng
             #todo: this code is urge, should be fixed
             # 画均线
+
             plt.plot(all_pd.index, all_pd['ma'], label='ma')
             # 可视化拐点，和斜率
             peaks = ext_list[0]
@@ -195,6 +196,19 @@ def plot_his_trade_ex(orders, kl_pd, ext_list):
                 label = label + 's' if peaks.size > 1 else label
                 plt.plot(all_pd.index[peaks], all_pd.close[peaks], '+', mfc=None, mec='r', mew=2, ms=8,
                         label='%d %s' % (peaks.size, label))            
+
+
+            # 画牛熊线
+            plt.plot(all_pd.index, all_pd['ma_bear_bull'], label='bear_bull_ma')
+            # 可视化拐点，和斜率
+            peaks = ext_list[1]
+
+            if peaks.size:
+                label = 'bull peak'
+                label = label + 's' if peaks.size > 1 else label
+                plt.plot(all_pd.index[peaks], all_pd.close[peaks], '*', mfc=None, mec='g', mew=2, ms=8,
+                        label='%d %s' % (peaks.size, label))            
+
 
             #--------------------------------
 

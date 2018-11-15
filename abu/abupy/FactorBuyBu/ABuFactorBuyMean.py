@@ -54,7 +54,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
 
         return ma_array
 
-    def _detect_peaks(self, ma_array):
+    def _detect_peaks(self, ma_array, threshold = 1, min_dist = 30):
     
         # sample codes from https://github.com/MonsieurV/py-findpeaks
         # py-findpeaks/tests/lows_and_highs.py
@@ -65,11 +65,6 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         cb = np.array(ma_array.tolist())
 
         #print(type(ma_array), type(ma_array.tolist()), type(np.array(ma_array.tolist())), type(cb)) 
-
-        #threshold = 0.02
-        #min_dist = 150
-        threshold = 1
-        min_dist = 30
 
 
         print('Detect high peaks with minimum height and distance filters.')
@@ -127,20 +122,26 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
 
         #计算均线
         #计算牛熊线 60日均线
-        ma_array = self._calc_ma(self.bear_bull_period)
-        self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma_bear_bull', ma_array)  
+        bear_bull_array = self._calc_ma(self.bear_bull_period)
+        self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma_bear_bull', bear_bull_array)
 
         #计算n日均线
         ma_array = self._calc_ma(self.ma_period)
         self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma', ma_array)  
 
-        print(self.kl_pd)
+        #print(self.kl_pd)
         
 
-        #根据拐点切片数据
-        self._peaks, self._slices = self.split_by_peak(ma_array, self.kl_pd)
+        #找出牛熊线的拐点，但是不切片原始数据 source_pd = None
+        self._bear_bull_peaks, _ = self.split_by_peak(bear_bull_array, source_pd = None, 
+            threshold = 1, min_dist = 150)
+        #根据拐点切片均线数据
+        self._peaks, self._slices = self.split_by_peak(ma_array, source_pd = self.kl_pd,
+            threshold = 1, min_dist = 30)
 
         print("symbol 's ma(%d) is sliced in %d slices" % (self.ma_period, len(self._slices)))
+        print("bear bull marker peaks:")
+        print(self._bear_bull_peaks)
 
 
         #计算每段数据的斜率等数据
@@ -166,28 +167,26 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         self._weight()
 
 
-    def split_by_peak(self, wave, source_pd = None):
+    def split_by_peak(self, wave, threshold, min_dist, source_pd = None):
 
         #找出拐点,包含高点和低点
-        highs, lows = self._detect_peaks(wave)
+        highs, lows = self._detect_peaks(wave, threshold, min_dist)
         
         peaks = np.append(highs, lows)
         peaks = np.sort(peaks)
 
 
-        #why ??
-        #if ((source_pd == None) or (source_pd.empty)):
-        if (source_pd.empty):
-            return peaks, None
-
-
         if (peaks[0] > 0):
             peaks = np.insert(peaks, 0, [0])
 
-        if (peaks[-1] < len(source_pd)):
-            peaks = np.append(peaks, [len(source_pd) - 1])
+        if (peaks[-1] < len(wave)):
+            peaks = np.append(peaks, [len(wave) - 1])
 
         print("peak's is ", peaks)
+
+        #只求出拐点
+        if ((source_pd is None) or (source_pd.empty)):
+            return peaks, None
 
         slices = []
         
@@ -203,6 +202,62 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         
         return peaks, slices
 
+    def _find_left(self, index):
+        #返回 pre left, left
 
+        """
+        peaks = self._bear_bull_peaks
+        for i, peak in enumerate(peaks):
+            if ( i == 0 ): continue
+            if index > peak :
+                return peaks[i-1], peak
+        """ 
+
+        #先反转peaks, 这样，从后往前找，
+        peaks = self._bear_bull_peaks.tolist()
+        peaks.reverse()
+        #print(peaks)
+        #print("index = ", index)
+
+        #我们补充了端点，所以，当前index等于最后一个peak
+        for i, peak in enumerate(peaks):
+            #print("i, peak, index", i, peak, index) 
+            if index > peak :
+                if (peak == 0 ):
+                    return 0, peak
+                else:
+                    return peak, peaks[i+1]
+ 
+        #如果到这里，说明错误
+        return 0, 0
+    
     def fit_day(self, today):
-        pass
+        kl_pd = self.kl_pd
+        
+        #寻找今天的左端点和左左端点
+        pre_left, left = self._find_left(self.today_ind)
+        print("pre_left, left:", pre_left, left)
+
+        price = kl_pd.close[self.today_ind]
+
+        #牛熊的权重，+-10,是均衡市场， > 20 - 100 牛市 <-(20 -100) 熊市
+        self.bull_bear_weight = 0
+
+        print(kl_pd.close[left], kl_pd.close[pre_left])
+
+        if (kl_pd.close[left] > kl_pd.close[pre_left]):
+            #目前在下降通道，熊市
+            print("现在是熊市 :")
+            self.bull_bear_weight = -20
+        else:
+            #目前在上升通道，牛市
+            print("现在是牛市 :")
+            self.bull_bear_weight = 20
+
+            if (price < kl_pd.ma_bear_bull[self.today_ind]) :
+                print("牛市，但今日价格低于牛熊分界，发出警告，weight < -50 不参与交易")
+                self.bull_bear_weight = self.bull_bear_weight - 100
+
+        print("bull bear weight: ", self.bull_bear_weight)
+
+        
