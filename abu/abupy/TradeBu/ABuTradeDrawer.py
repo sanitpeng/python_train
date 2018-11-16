@@ -194,7 +194,8 @@ def plot_his_trade_ex(orders, kl_pd, ext_list):
             if peaks.size:
                 label = 'peak'
                 label = label + 's' if peaks.size > 1 else label
-                plt.plot(all_pd.index[peaks], all_pd.close[peaks], '+', mfc=None, mec='r', mew=2, ms=8,
+                #plt.plot(all_pd.index[peaks], all_pd.close[peaks], '+', mfc=None, mec='r', mew=2, ms=8,
+                plt.plot(all_pd.index[peaks], all_pd.ma[peaks], '+', mfc=None, mec='r', mew=2, ms=8,
                         label='%d %s' % (peaks.size, label))            
 
 
@@ -206,7 +207,8 @@ def plot_his_trade_ex(orders, kl_pd, ext_list):
             if peaks.size:
                 label = 'bull peak'
                 label = label + 's' if peaks.size > 1 else label
-                plt.plot(all_pd.index[peaks], all_pd.close[peaks], '*', mfc=None, mec='g', mew=2, ms=8,
+                #plt.plot(all_pd.index[peaks], all_pd.close[peaks], '*', mfc=None, mec='g', mew=2, ms=8,
+                plt.plot(all_pd.index[peaks], all_pd.ma_bear_bull[peaks], '*', mfc=None, mec='g', mew=2, ms=8,
                         label='%d %s' % (peaks.size, label))            
 
 
