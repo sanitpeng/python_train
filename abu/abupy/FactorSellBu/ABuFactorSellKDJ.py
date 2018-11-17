@@ -40,6 +40,7 @@ class AbuFactorSellKDJ(AbuFactorSellBase):
         })
 
         #print (self.kl_pd)
+        print (self.kl_pd[-20:-1])
 
         self.sell_type_extra = '{}:sell_n={}'.format(self.__class__.__name__, self.j_threshold)
 
@@ -55,15 +56,32 @@ class AbuFactorSellKDJ(AbuFactorSellBase):
         :return:
         """
 
+        """
+        debug codes, for why enter 
+        import traceback
+        traceback.print_stack()   #mark for debug, sanit.peng
+        """
+
         #use today
         k_value = self.kdj.KDJ_K[self.today_ind]
         d_value = self.kdj.KDJ_D[self.today_ind]
         j_value = self.kdj.KDJ_J[self.today_ind]
 
-        for order in orders:
+        #当同一个股票，或者多个股票有很多个订单的时候，len(orders) > 1 这个时候就会被调用
+        #执行很多次。
+        #不太明白的是，是否会出现，多个股票的情况，
+        #因为这卖出因子是按照一个股票来实现的。
+        #todo: 需要深入理解这个部分。
+
+        for i, order in enumerate(orders):
+            #已经卖出的不判断
+            if order.sell_type != 'keep' : continue
+           
             if j_value >= self.j_threshold:
                 #print(order)
-                print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
-                # 只要超过self.sell_n即卖出
+                print (ABuDateUtil.fmt_date(today.date), ' sell order %d (k, d, j) = (%f, %f, %f) ' 
+                    %(i, k_value, d_value, j_value))
+
                 #self.sell_today(order) if self.is_sell_today else self.sell_tomorrow(order)
                 self.sell_tomorrow(order)
+

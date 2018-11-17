@@ -69,6 +69,7 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         """
         :param today: 当前驱动的交易日金融时间序列数据
         """
+
         super(AbuFactorBuyKDJ, self).fit_day(today)
         
         #use today
@@ -79,7 +80,8 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         
         if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
             # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
-            print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
+            print (ABuDateUtil.fmt_date(today.date), ' buy (k, d, j) = (%f, %f, %f) ' 
+                %(k_value, d_value, j_value))
             return self.buy_tomorrow()
         return None
 
