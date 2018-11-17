@@ -40,7 +40,6 @@ class AbuFactorSellKDJ(AbuFactorSellBase):
         })
 
         #print (self.kl_pd)
-        print (self.kl_pd[-20:-1])
 
         self.sell_type_extra = '{}:sell_n={}'.format(self.__class__.__name__, self.j_threshold)
 

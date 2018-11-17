@@ -65,6 +65,13 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         # 在输出生成的orders_pd中显示的名字
         self.factor_name = '{}:{}'.format(self.__class__.__name__, self.j_threshold )
 
+    def _show_info(self, date, dict):
+        print(ABuDateUtil.fmt_date(date), ' buy signal, indicator: ')
+        for key,value in dict.items():
+            print('    {key}:{value}'.format(key = key, value = value))
+        print(' ')
+
+
     def fit_day(self, today):
         """
         :param today: 当前驱动的交易日金融时间序列数据
@@ -77,11 +84,18 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         d_value = self._param_pd.KDJ_D[self.today_ind]
         j_value = self._param_pd.KDJ_J[self.today_ind]
 
-        
+        kdj = [k_value, d_value, j_value]
+
+        self.indicator['kdj'] = kdj
+
+
         if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
             # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
-            print (ABuDateUtil.fmt_date(today.date), ' buy (k, d, j) = (%f, %f, %f) ' 
-                %(k_value, d_value, j_value))
+            #print (ABuDateUtil.fmt_date(today.date), ' buy (k, d, j) = (%f, %f, %f) ' 
+            #    %(k_value, d_value, j_value))
+
+            self._show_info(today.date, self.indicator)
+
             return self.buy_tomorrow()
         return None
 

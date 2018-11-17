@@ -182,7 +182,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
                 if (peak >= left_peak and peak <= bb_peak):
                     return -1 
 
-        #如果到这里，是不是出差？
+        #如果到这里，是不是出错？
         print("why is here")
         return 0
 
@@ -441,6 +441,28 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         _, left = self._find_left(self.today_ind, self._peaks)
         deg, self.total_days = self._day_weight(left, self.bull_bear_weight)
         
-        print(ABuDateUtil.fmt_date(today.date), " bb weight = %d arg = %f, run days %d" 
-            %(self.bull_bear_weight, deg, self.total_days))
+        #print(ABuDateUtil.fmt_date(today.date), " bb weight = %d arg = %f, run days %d" 
+        #    %(self.bull_bear_weight, deg, self.total_days))
+
+        extreme = 0
+        if deg < -100 : 
+            deg += 100
+            extreme = 1
+
+        if deg >  100 : 
+            deg -= 100
+            extreme = 1
+
+        #字典, sanit.peng
+        indicator = { 'bb_weight': self.bull_bear_weight,
+            'deg':      deg,
+            'extreme':  extreme,
+            'days':     self.total_days,
+            'ma':       self.kl_pd.ma[self.today_ind],
+            'bb_ma':    self.kl_pd.ma_bear_bull[self.today_ind],
+            'price':    self.kl_pd.close[self.today_ind]
+            }
+
+        self.indicator = indicator
+
 
