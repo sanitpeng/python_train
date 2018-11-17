@@ -4,3 +4,5 @@ https://stackoverflow.com/questions/25571260/scipy-signal-find-peaks-cwt-not-fin
 https://pypi.org/project/PeakUtils/
 pip install PeakUtils
 
+https://github.com/QUANTAXIS
+

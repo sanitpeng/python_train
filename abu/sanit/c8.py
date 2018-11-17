@@ -404,7 +404,7 @@ def pick_time_kdj():
     abupy.slippage.sbm.g_open_down_rate = 0.11
     
     #benchmark = AbuBenchmark()
-    benchmark = AbuBenchmark(n_folds = 3)
+    benchmark = AbuBenchmark(n_folds = 2)
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
     kl_pd_manager = AbuKLManager(benchmark, capital)
 
@@ -426,11 +426,12 @@ def pick_time_kdj():
     factor_summary.append(factor._steps)
     #print(factor_summary)
 
-    
+    """ 
     orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
         ext_list = factor_summary)
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False, 
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False)
+    """
 
     """
     ABuTradeExecute.apply_action_to_capital(capital, action_pd, kl_pd_manager)

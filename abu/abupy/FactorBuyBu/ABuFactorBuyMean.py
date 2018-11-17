@@ -16,7 +16,7 @@ from .ABuFactorBuyBase import AbuFactorBuyBase, BuyCallMixin
 from ..IndicatorBu.ABuNDMa import calc_ma_from_prices, calc_ma
 from ..CoreBu.ABuPdHelper import pd_resample
 from ..TLineBu.ABuTL import AbuTLine
-from ..UtilBu import ABuRegUtil
+from ..UtilBu import ABuRegUtil, ABuDateUtil
 
 __author__ = 'sanit.peng'
 __weixin__ = 'sanit'
@@ -68,14 +68,14 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         #print(type(ma_array), type(ma_array.tolist()), type(np.array(ma_array.tolist())), type(cb)) 
 
 
-        print('Detect high peaks with minimum height and distance filters.')
+        #print('Detect high peaks with minimum height and distance filters.')
         highs = peakutils.peak.indexes(
             np.array(cb),
             thres=threshold/max(cb), min_dist=min_dist
         )
-        print('High peaks are: %s' % (highs))
+        #print('High peaks are: %s' % (highs))
 
-        print('Detect low peaks with minimum height and distance filters.')
+        #print('Detect low peaks with minimum height and distance filters.')
         # Invert the signal.
         cbInverted = cb * -1
 
@@ -83,7 +83,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
             np.array(cbInverted),
             thres=threshold/max(cbInverted), min_dist=min_dist
         )
-        print('Low peaks are: %s' % (lows))        
+        #print('Low peaks are: %s' % (lows))        
 
         return highs, lows
 
@@ -107,8 +107,8 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         #找出牛熊线的拐点，但是不切片原始数据 source_pd = None
         self._bear_bull_peaks, _ = self.split_by_peak(bear_bull_array, source_pd = None, 
             threshold = 1, min_dist = 150)
-        print("bear bull marker peaks: ",)
-        print(self._bear_bull_peaks)
+        #print("bear bull marker peaks: ",)
+        #print(self._bear_bull_peaks)
 
         #根据拐点切片均线数据
         self._peaks, self._slices = self.split_by_peak(ma_array, source_pd = self.kl_pd,
@@ -189,18 +189,18 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
     def _split_deg_step_by_bear_bull(self):
         ma_peaks = self._peaks
 
-        print("ma_peaks")
-        print(ma_peaks)
+        #print("ma_peaks")
+        #print(ma_peaks)
 
         bull_degs = []
         bull_steps = []
         bear_degs = []
         bear_steps = []
        
-        print("ma_peaks len=, degs len = ", len(ma_peaks), len(self._degs))
+        #print("ma_peaks len=, degs len = ", len(ma_peaks), len(self._degs))
 
         for i, ma_peak in enumerate(ma_peaks, 0): 
-            print("******i = ma_peak = ", i, ma_peak) 
+            #print("******i = ma_peak = ", i, ma_peak) 
             if (i == 0): continue
 
             if (self._judge_bb(ma_peak) > 0):
@@ -215,10 +215,12 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         bull = pd.DataFrame({'deg':bull_degs, 'step':bull_steps})
         bear = pd.DataFrame({'deg':bear_degs, 'step':bear_steps})
 
+        """
         print("bull market arc values list:")
         print(bull)
         print("bear market arc values list:")
         print(bear)
+        """
 
         return bull, bear 
 
@@ -237,7 +239,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         if (peaks[-1] < len(wave)):
             peaks = np.append(peaks, [len(wave) - 1])
 
-        print("peak's is ", peaks)
+        #print("peak's is ", peaks)
 
         #只求出拐点
         if ((source_pd is None) or (source_pd.empty)):
@@ -299,39 +301,48 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
 
 
         #牛熊权重，现在只是简单判断是否是牛熊
+        #重新按照deg的大小排序，方便比较，
         if (bear_bull > 10):
             markets = bull.sort_values(by="deg")
         else:
             markets = bear.sort_values(by="deg")
 
+        #pd排序后，index不变，重新构造一个pd
+        degs = markets['deg'].tolist()
+        steps = markets['step'].tolist()
+
+        markets = pd.DataFrame({'deg':degs, 'step':steps})
         #print(markets)
 
 
-        print(len(markets))
-
-        for i, market in enumerate(markets):
+        extreme = 0
+        #why enumerate is not work?????, by sanit.peng
+        #for i, market in enumerate(markets):
+        for i in range(0, len(markets)):
             if (i == (len(markets) - 1)):
                 #说明当前的角度是历史极大值，警告，并赋予，最大的值
-                print("历史极大角度，上升极大")
+                #print("历史极大角度，上升极大")
                 ret = markets.step[i]
+                extreme = 1
                 break
 
             if (deg < markets.deg[0]):
                 #说明当前的角度是历史极小值，警告，并赋予，最小的值
-                print("历史极小角度，下降极大")
+                #print("历史极小角度，下降极大")
                 ret = markets.step[0]
+                extreme = 1
                 break
 
 
             if (markets.deg[i] <= deg and deg <= markets.deg[i+1]):
-                print("----i = %d, deg = %f, left = %f, right = %f" %(i, deg, markets.deg[i], markets.deg[i+1]))
+                #print("----i = %d, deg = %f, left = %f, right = %f" %(i, deg, markets.deg[i], markets.deg[i+1]))
                 #在历史的角度中，选择一个角度相差最近的？？？？
                 #这个地方应该用比例或者其他算法，
                 #todo: list
                 d1 = abs(abs(deg) - abs(markets.deg[i]))
                 d2 = abs(abs(deg) - abs(markets.deg[i+1]))
 
-                print("d1 = %f, d2 = %f" %(d1, d2))
+                #print("d1 = %f, d2 = %f" %(d1, d2))
                 #print("deg = %f, left = %f, right = %f" %(deg, markets.deg[i], markets.deg[i+1]))
                 
                 if (d1 < d2):
@@ -340,18 +351,21 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
                     ret = markets.step[i+1]
                 break
             else:
-                print("+++i = %d, deg = %f, left = %f, right = %f" %(i, deg, markets.deg[i], markets.deg[i+1]))
+                #print("+++i = %d, deg = %f, left = %f, right = %f" %(i, deg, markets.deg[i], markets.deg[i+1]))
+                pass
 
-            print("i = %d, deg = %f, left = %f, right = %f" %(i, deg, markets.deg[i], markets.deg[i+1]))
+            #print("i = %d, deg = %f, left = %f, right = %f" %(i, deg, markets.deg[i], markets.deg[i+1]))
 
-        print("select step = ", ret)
-        return ret
+        #print("select step = ", ret)
+
+        return ret, extreme
 
 
 
     def _day_weight(self, left, bear_bull):
 
         """
+        废弃代码
         r = []
         for i, deg in enumerate(degs):
             ratio = deg / steps[i]
@@ -360,8 +374,6 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         ratios = np.array(r)
 
         all_pd = pd.DataFrame({'deg': degs, 'step':steps, 'ratio':ratios})
-        print("**************")
-        print(all_pd)
 
         for i, deg in enumerate(all_pd.deg):
             print(deg, all_pd.step[i])
@@ -375,19 +387,26 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         price = kl_pd.close[self.today_ind]
             
         #需要计算当天的斜率，因为，分段数据里面使用了将来数据
-
         
         values = kl_pd.close[left:self.today_ind]
         if ((self.today_ind - left)  == 0):
-            print("left, today ", left, self.today_ind)
-            #todo list
-            return
+            #如果今天刚好是左端点，返回角度0，天数0
+            return 0, 0
 
         #print("left, today ", left, self.today_ind)
         deg = ABuRegUtil.calc_regress_deg(values, False)
         #print("today 's arc ", self.today_ind, deg)
-        self._guess_steps(deg, bear_bull)
 
+        #根据当天的斜率，推测出按照当前斜率市场可能总共运行天数，
+        #包含过去天数和将来天数,作为权重使用
+        total_days, extreme = self._guess_steps(deg, bear_bull)
+     
+        #如果是极值，那么对极大值+100， 极小值-100, 因为deg的最大值-90到90
+        if (extreme):
+            if (deg > 0): deg += 100 
+            else: deg -= 100
+
+        return deg, total_days
 
 
     def fit_day(self, today):
@@ -414,11 +433,14 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
             self.bull_bear_weight = 20
 
             if (price < kl_pd.ma_bear_bull[self.today_ind]) :
-                print("牛市，但今日价格低于牛熊分界，发出警告，weight < -50 不参与交易")
+                #print("牛市，但今日价格低于牛熊分界，发出警告，weight < -50 不参与交易")
                 self.bull_bear_weight = self.bull_bear_weight - 100
 
         #print("bull bear weight: ", self.bull_bear_weight)
 
         _, left = self._find_left(self.today_ind, self._peaks)
-        self._day_weight(left, self.bull_bear_weight)
+        deg, self.total_days = self._day_weight(left, self.bull_bear_weight)
+        
+        print(ABuDateUtil.fmt_date(today.date), " bb weight = %d arg = %f, run days %d" 
+            %(self.bull_bear_weight, deg, self.total_days))
 
