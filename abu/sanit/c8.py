@@ -405,18 +405,33 @@ def pick_time_kdj():
     
     #benchmark = AbuBenchmark()
     benchmark = AbuBenchmark(n_folds = 2)
+    #benchmark = AbuBenchmark(start = "20161121", end="20161122")
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
     kl_pd_manager = AbuKLManager(benchmark, capital)
 
     # 获取symbol的交易数据
-    kl_pd = kl_pd_manager.get_pick_time_kl_pd('002236')
-    #kl_pd = kl_pd_manager.get_pick_time_kl_pd('600309')
+    #symbol = '002236'
+    #symbol = '000002'
+    #symbol = '600309'
+    symbol = '601398'
+    kl_pd = kl_pd_manager.get_pick_time_kl_pd(symbol)
+
+    """
+    kl_pd = kl_pd[kl_pd.volume != 0]
+    kl_pd.name = symbol
+    print(kl_pd)
+    """ 
+
+
     abu_worker = AbuPickTimeWorker(capital, kl_pd, benchmark, buy_factors, sell_factors)
     abu_worker.fit()
-    #print (abu_worker.orders)
-    
-    #print("----------------------------")
-    
+    """
+    print("*************************")
+    print("the are %d orders" %(len(abu_worker.orders)))
+    print (abu_worker.orders)
+    print("*************************")
+    """
+
     factor = abu_worker.buy_factors[0]
     factor_summary = list()
     factor_summary.append(factor._peaks)
@@ -425,13 +440,17 @@ def pick_time_kdj():
     factor_summary.append(factor._degs)
     factor_summary.append(factor._steps)
     #print(factor_summary)
+    #print("bear_bull peaks", factor._bear_bull_peaks)
 
-    """ 
-    orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
+
+    orders = [abu_worker.orders[0]]
+    orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(orders, kl_pd, draw=True, 
         ext_list = factor_summary)
+
+    #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
+    #    ext_list = factor_summary)
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False, 
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False)
-    """
 
     """
     ABuTradeExecute.apply_action_to_capital(capital, action_pd, kl_pd_manager)
@@ -613,14 +632,15 @@ def init_env():
     #环境
     abupy.env.disable_example_env_ipython()
     #bd source have some data error, for example, 002236, some date error, for kdj
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
-    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_nt
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
-    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
-    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
 
 if __name__ == "__main__":

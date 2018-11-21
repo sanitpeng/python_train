@@ -44,8 +44,15 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         if 'fastd_period' in kwargs:
             self.fastd_period = kwargs['fastd_period']
 
+        """
+        1) K线是快速确认线——数值在90以上为超买，数值在10以下为超卖；
+            D线是慢速主干线——数值在80以上为超买，数值在20以下为超卖；
+            J线为方向敏感线，当J值大于90，特别是连续5天以上，股价至少会形成短期头部，
+            反之J值小于10时，特别是连续数天以上，股价至少会形成短期底部        
+        """
 
-        self.k_threshold = 20
+        
+        self.k_threshold = 10
         self.d_threshold = 20
         self.j_threshold = 0
        
@@ -89,11 +96,40 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         self.indicator['kdj'] = kdj
 
 
-        if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
-            # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
-            #print (ABuDateUtil.fmt_date(today.date), ' buy (k, d, j) = (%f, %f, %f) ' 
-            #    %(k_value, d_value, j_value))
+        """
+        一下这段是百度百科上的，参考，学习总是让人进步, sanit.peng
 
+        实战研判
+        1) K线是快速确认线——数值在90以上为超买，数值在10以下为超卖；
+            D线是慢速主干线——数值在80以上为超买，数值在20以下为超卖；
+            J线为方向敏感线，当J值大于90，特别是连续5天以上，股价至少会形成短期头部，
+            反之J值小于10时，特别是连续数天以上，股价至少会形成短期底部。
+        2) 当K值由较小逐渐大于D值，在图形上显示K线从下方上穿D线，
+            所以在图形上K线向上突破D线时，俗称金叉，即为买进的讯号。
+            实战时当K，D线在20以下交叉向上，此时的短期买入的信号较为准确；
+            如果K值在50以下，由下往上接连两次上穿D值，形成右底比左底高的“W底”形态时，
+            后市股价可能会有相当的涨幅。
+        3) 当K值由较大逐渐小于D值，在图形上显示K线从上方下穿D线，显示趋势是向下的，
+            所以在图形上K线向下突破D线时，俗称死叉，即为卖出的讯号。
+            实战时当K，D线在80以上交叉向下，此时的短期卖出的信号较为准确；
+            如果K值在50以上，由上往下接连两次下穿D值，形成右头比左头低的“M头”形态时，
+            后市股价可能会有相当的跌幅。
+        4) 通过KDJ与股价背离的走势，判断股价顶底也是颇为实用的方法：
+            A) 股价创新高，而KD值没有创新高，为顶背离，应卖出； 
+            B) 股价创新低，而KD值没有创新低，为底背离，应买入；
+            需要注意的是KDJ顶底背离判定的方法，只能和前一波高低点时KD值相比，不能跳过去相比较。
+
+
+        """
+
+        #均线价格<=0，说明均线周期没有到
+        if (self.indicator['ma'] <= 0): return None
+
+
+        #if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
+        #if j_value < self.j_threshold and k_value < self.k_threshold :
+        if j_value < self.j_threshold or d_value < self.d_threshold or k_value < self.k_threshold :
+            # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
             self._show_info(today.date, self.indicator)
 
             return self.buy_tomorrow()

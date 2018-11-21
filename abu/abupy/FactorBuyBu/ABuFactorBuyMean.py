@@ -23,7 +23,7 @@ __weixin__ = 'sanit'
 
 
 class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
-    """示例买入动态自适应双均线策略"""
+    """买入动态自适应均线策略"""
 
     def _init_self(self, **kwargs):
         """
@@ -125,9 +125,11 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         degs = np.array([])
 
         for slice in self._slices:
-            close_deg = ABuRegUtil.calc_regress_deg(slice.close.values, False)
-            ma_deg =    ABuRegUtil.calc_regress_deg(slice.ma.values, False)
-            degs = np.append(degs, close_deg) 
+            #close_deg = ABuRegUtil.calc_regress_deg(slice.close.values, False, zoom=False)
+            #degs = np.append(degs, close_deg) 
+            #使用均线的角度 ？？
+            ma_deg =    ABuRegUtil.calc_regress_deg(slice.ma.values, False, zoom=False)
+            degs = np.append(degs, ma_deg) 
 
             #print('close 趋势角度:' + str(close_deg))
             #print('ma 趋势角度:' + str(ma_deg))
@@ -141,25 +143,40 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
             steps = np.append(steps, step)
         self._steps = steps
 
-        """
-        #验证性质代码，用来验证，角度的可信度，从现在的结果看是可信的
-        #但是，需要有个量度参数对，可信度进行打分（置信度）
-        for i, deg in enumerate(degs):
-            #验证下斜率公式
-            #y = kx + b, b 为切片开始点的值, k = tanα, α是弧度，先将角度转化成弧度
-            b = self._slices[i].close[0]
-            x = self._steps[i]
-            k = math.tan(np.deg2rad(self._degs[i]))
-            y = k * x + b
-            y1 = self._slices[i].close[-1]
-            
-            print("y = kx + b, (k , x, b)", k, x, b)
-            print("y = , y'= ", y, y1)
 
-        for i in range(0, len(degs)):
-            v = degs[i] / steps[i]
-            print ("v = ", v)
+
         """
+        show the information of slices
+        """
+
+        print("切片数据:")
+        print("开始日期   结束日期     开始价格   结束价格    角 度     步长    斜率验证")
+        for i, slice in enumerate(self._slices):
+            #时间
+            start = slice.date[0]
+            end = slice.date[-1]
+
+            #角度正负，方便打印
+            s = ' '
+            if (degs[i] < 0):
+                s = '-'
+
+
+            #验证性质代码，用来验证，角度的可信度，从现在的结果看是可信的
+            #但是，需要有个量度参数对，可信度进行打分（置信度）
+            #验证斜率是否正确
+            #y = kx + b, b 为切片开始点的值, k = tanα, α是弧度，先将角度转化成弧度
+            #b = slice.close[0]
+            b = slice.ma[0]
+            x = steps[i]
+            k = math.tan(np.deg2rad(degs[i]))
+            y = k * x + b            
+       
+
+            print(ABuDateUtil.fmt_date(start), ABuDateUtil.fmt_date(end), 
+                "  %.3f      %.3f      %s%.3f     %.3d      %.3f" 
+                %(slice.close[0], slice.close[-1], s, abs(degs[i]), steps[i], y))
+
         
         self._bull_peak_step, self._bear_peak_step = self._split_deg_step_by_bear_bull()
 
@@ -239,7 +256,29 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         if (peaks[-1] < len(wave)):
             peaks = np.append(peaks, [len(wave) - 1])
 
-        #print("peak's is ", peaks)
+        #print("wave peak's is ", peaks)
+
+        #去掉步长只有1，2的拐点，步长为1，取前一天；步长为2，取中间一天
+
+        for i, peak in enumerate(peaks):
+            if (i == len(peaks) - 1):
+                break
+            delta = peaks[i+1] - peak
+
+            if delta == 1:
+                peaks[i+1] = peak
+            if delta == 2:
+                peaks[i] = peak + 1
+                peaks[i+1] = peak + 1
+
+
+        peaks = list(set(peaks))
+        peaks.sort()
+        peaks = np.array(peaks)
+
+        #print("new wave peak's is ", peaks)
+
+
 
         #只求出拐点
         if ((source_pd is None) or (source_pd.empty)):
@@ -394,7 +433,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
             return 0, 0
 
         #print("left, today ", left, self.today_ind)
-        deg = ABuRegUtil.calc_regress_deg(values, False)
+        deg = ABuRegUtil.calc_regress_deg(values, False, zoom=False)
         #print("today 's arc ", self.today_ind, deg)
 
         #根据当天的斜率，推测出按照当前斜率市场可能总共运行天数，
@@ -444,6 +483,9 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         #print(ABuDateUtil.fmt_date(today.date), " bb weight = %d arg = %f, run days %d" 
         #    %(self.bull_bear_weight, deg, self.total_days))
 
+        #print("left peak", ABuDateUtil.fmt_date(kl_pd.date[left]), "price is ",  
+        #    self.kl_pd.close[left])
+
         extreme = 0
         if deg < -100 : 
             deg += 100
@@ -457,10 +499,11 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         indicator = { 'bb_weight': self.bull_bear_weight,
             'deg':      deg,
             'extreme':  extreme,
-            'days':     self.total_days,
             'ma':       self.kl_pd.ma[self.today_ind],
             'bb_ma':    self.kl_pd.ma_bear_bull[self.today_ind],
-            'price':    self.kl_pd.close[self.today_ind]
+            'price':    self.kl_pd.close[self.today_ind],
+            'days':     self.total_days,
+            'runned_days':self.today_ind - left,
             }
 
         self.indicator = indicator

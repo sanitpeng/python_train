@@ -87,7 +87,9 @@ def regress_y(y, mode=True, zoom=False, show=False):
     return regress_xy(x, y, mode=mode, zoom=zoom, show=show)
 
 
-def calc_regress_deg(y, show=True):
+#modify by sanit.peng, add zoom
+#def calc_regress_deg(y, show=True):
+def calc_regress_deg(y, show=True, zoom=True):
     """
     将y值 zoom到与x一个级别，之后再fit出弧度转成角度
     1 多个股票的趋势比较提供量化基础，只要同一个时间范围，就可以比较
@@ -97,7 +99,8 @@ def calc_regress_deg(y, show=True):
     :return: deg角度float值
     """
     # 将y值 zoom到与x一个级别
-    model, _ = regress_y(y, mode=True, zoom=True, show=show)
+    #model, _ = regress_y(y, mode=True, zoom=True, show=show)
+    model, _ = regress_y(y, mode=True, zoom=zoom, show=show)
     rad = model.params[1]
     # fit出弧度转成角度
     deg = np.rad2deg(rad)
