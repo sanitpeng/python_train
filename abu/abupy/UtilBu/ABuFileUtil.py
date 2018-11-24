@@ -379,3 +379,26 @@ def save_file(ct, file_name):
     ensure_dir(file_name)
     with open(file_name, 'wb') as f:
         f.write(ct)
+
+
+#add by sanit.peng, 通达讯的数据需要从本地文件读取
+#返回的是json字符串，用来模拟网络传输。
+#另外，以后需要从mysql读取
+
+from ..CoreBu import ABuEnv
+from os import path
+def get_kline_csv(symbol, year):
+    """
+    针对csv存储模式，读取本地cache金融时间序列
+    :param symbol: 金融时间序列索引key，针对对csv存储模式为目标csv的具体文件名
+    """
+    # noinspection PyProtectedMember
+    csv_dir = ABuEnv.g_project_kl_df_data_example if ABuEnv._g_enable_example_env_ipython \
+        else path.join(ABuEnv.g_project_data_dir, 'tdx_csv')
+
+    # 通过连接date_key和csv存储根目录，得到目标csv文件路径
+    csv_fn = os.path.join(csv_dir, symbol)
+    df = pd.read_csv(csv_fn, index_col=0)
+    if (df is None):
+        return None
+    return df.to_json(orient='table')

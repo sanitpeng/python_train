@@ -21,13 +21,15 @@ from ..CoreBu.ABuEnv import EMarketTargetType, EMarketSubType
 from ..CoreBu import ABuEnv
 from ..MarketBu import ABuNetWork
 from ..MarketBu.ABuDataBase import StockBaseMarket, SupportMixin, FuturesBaseMarket, TCBaseMarket
-from ..MarketBu.ABuDataParser import BDParser, TXParser, NTParser, SNUSParser
+from ..MarketBu.ABuDataParser import BDParser, TXParser, NTParser, SNUSParser, TDXParser
 from ..MarketBu.ABuDataParser import SNFuturesParser, SNFuturesGBParser, HBTCParser
 from ..UtilBu import ABuStrUtil, ABuDateUtil, ABuMd5
 from ..UtilBu.ABuDTUtil import catch_error
 from ..CoreBu.ABuDeprecated import AbuDeprecated
 # noinspection PyUnresolvedReferences
 from ..CoreBu.ABuFixes import xrange, range, filter
+
+from ..UtilBu import ABuFileUtil
 
 """网络请求（连接10秒，接收60秒）超时时间"""
 K_TIME_OUT = (10, 60)
@@ -311,6 +313,77 @@ class NTApi(StockBaseMarket, SupportMixin):
     def minute(self, n_fold=5, *args, **kwargs):
         """分钟k线接口"""
         raise NotImplementedError('NTApi minute NotImplementedError!')
+
+
+
+
+#add by sanit.peng
+#通达讯API接口，因为是收费，所以，实际上是从文件读取
+#准备实际上读取sql数据库
+class TDXApi(StockBaseMarket, SupportMixin):
+    """通达讯数据源，支持a股"""
+
+
+    def __init__(self, symbol):
+        """
+        :param symbol: Symbol类型对象
+        """
+        super(TDXApi, self).__init__(symbol)
+        # 设置数据源解析对象类
+        self.data_parser_cls = TDXParser
+
+    def kline(self, n_folds=2, start=None, end=None):
+        """日k线接口"""
+        kl_df = None
+        if start is None or end is None:
+            end_year = int(ABuDateUtil.current_str_date()[:4])
+            start_year = end_year - n_folds + 1
+        else:
+            start_year = int(start[:4])
+            end_year = int(end[:4])
+        req_year = list(range(start_year, end_year + 1))
+
+        if self._symbol.market == EMarketTargetType.E_MARKET_TARGET_CN:
+            market = self._symbol.market.value
+            symbol = self._symbol.symbol_code
+            if self._symbol.is_sz_stock():
+                symbol = 'SZ#{}.csv'.format(symbol)
+            else:
+                symbol = 'SH#{}.csv'.format(symbol)
+        else:
+            raise TypeError('TDXApi dt support {}'.format(self._symbol.market))
+
+        #now load all datas in one symbol
+        """
+        for year in req_year:
+            data = ABuFileUtil.get_kline_csv(symbol, year)
+            temp_df = None
+            if data is not None:
+                temp_df = self.data_parser_cls(self._symbol, data.json()).df
+            if temp_df is not None:
+                kl_df = temp_df if kl_df is None else kl_df.append(temp_df)
+        """
+        data = ABuFileUtil.get_kline_csv(symbol, 0)
+        #return data is json string
+        if data is not None:
+            #把json 字符串转换成字典
+            import json
+            data = json.loads(data)
+            temp_df = self.data_parser_cls(self._symbol, data).df
+        if temp_df is not None:
+            kl_df = temp_df if kl_df is None else kl_df.append(temp_df)
+
+        if kl_df is None:
+            return None
+        return StockBaseMarket._fix_kline_pd(kl_df, n_folds, start, end)
+
+    def minute(self, n_fold=5, *args, **kwargs):
+        """分钟k线接口"""
+        raise NotImplementedError('TDXApi minute NotImplementedError!')
+
+
+
+
 
 
 class SNUSApi(StockBaseMarket, SupportMixin):

@@ -633,8 +633,9 @@ def init_env():
     abupy.env.disable_example_env_ipython()
     #bd source have some data error, for example, 002236, some date error, for kdj
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_nt
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tdx
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
