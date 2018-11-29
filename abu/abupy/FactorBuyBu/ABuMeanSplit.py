@@ -22,13 +22,15 @@ __author__ = 'sanit.peng'
 __weixin__ = 'sanit'
 
 
-class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
+class AbuMaSplit():
     """买入动态自适应均线策略"""
 
-    def _init_self(self, **kwargs):
+    def __init__(self, kl_pd, **kwargs):
         """
             kwargs中可选参数：ma_period: 均线周期，默认不设置，使用自适应动态快线
         """
+
+        self.kl_pd = kl_pd
 
         # 均线周期，默认使用30天均线
         self.ma_period = 30
@@ -551,6 +553,5 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
             'runned_days':self.today_ind - left,
             }
 
-        self.indicator = indicator
-        return None
+        return indicator
 

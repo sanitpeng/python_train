@@ -465,6 +465,7 @@ def pick_time_kdj():
     """
 
     factor = abu_worker.buy_factors[0]
+    factor = factor.mean_split
     factor_summary = list()
     factor_summary.append(factor._peaks)
     factor_summary.append(factor._bear_bull_peaks)

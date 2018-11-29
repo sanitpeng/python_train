@@ -106,7 +106,6 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
                 print(ABuDateUtil.fmt_date(today.date), "######## sell tomorrow")
                 #print(ABuDateUtil.fmt_date(today.date), order)
                 self.sell_tomorrow(order)
-                #self.sell_today(order) if self.is_sell_today else self.sell_tomorrow(order)
 
 
 

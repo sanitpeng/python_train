@@ -13,24 +13,23 @@ from ..IndicatorBu import ABuNDKdj
 from ..UtilBu import ABuDateUtil
 
 from .ABuFactorBuyBase import AbuFactorBuyBase, AbuFactorBuyXD, BuyCallMixin, BuyPutMixin
-from .ABuFactorBuyMean import AbuMaSplit
+from .ABuMeanSplit import AbuMaSplit
 
 __author__ = 'sanit.peng'
 __weixin__ = 'sanit'
 
 
 # noinspection PyAttributeOutsideInit
-#class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
-class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
+class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
     """买入择时类，混入BuyCallMixin，即突破触发买入event"""
 
     def _init_self(self, **kwargs):
 
-        # 注意，如果需要初始化，父类的变量，这里需要显示调用，
-        # by sanit.peng
-        super(AbuFactorBuyKDJ, self)._init_self(**kwargs)
 
         # 不要使用kwargs.pop('xd', 20), 明确需要参数xq
+
+
+        self.mean_split = AbuMaSplit(self.kl_pd, **kwargs)
 
         self.fastk_period = 9
         if 'fastk_period' in kwargs:
@@ -79,7 +78,7 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         })
 
 
-        self.calc_trend_weight()
+        self.mean_split.calc_trend_weight()
 
 
         # 在输出生成的orders_pd中显示的名字
@@ -96,8 +95,10 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         """
         :param today: 当前驱动的交易日金融时间序列数据
         """
-
-        super(AbuFactorBuyKDJ, self).fit_day(today)
+        
+        mean_split = self.mean_split
+        mean_split.today_ind = self.today_ind
+        self.indicator = mean_split.fit_day(today)
         
         #use today
         k_value = self._param_pd.KDJ_K[self.today_ind]
