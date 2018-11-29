@@ -69,12 +69,10 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         :param today: 当前驱动的交易日金融时间序列数据
         :return:
         """
-
-        #use today
-        k_value = self._param_pd.KDJ_K[self.today_ind]
-        d_value = self._param_pd.KDJ_D[self.today_ind]
-        j_value = self._param_pd.KDJ_J[self.today_ind]
-        mfi = self._param_pd.MFI[self.today_ind]
+        k_value = self.indicator['kdj'][0]
+        d_value = self.indicator['kdj'][1]
+        j_value = self.indicator['kdj'][2]
+        mfi = self.indicator['mfi'] 
 
         if j_value >= self.j_threshold:
             self.kdj_sell_indicate = self.kdj_sell_indicate + 1
@@ -88,7 +86,6 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         if (self.indicator['bb_weight'] >= 20):
             #牛市
             if (self.mfi_sell_indicate):
-                print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
                 self.mfi_sell_indicate = 0
                 self.kdj_sell_indicate = 0
                 return True
@@ -96,7 +93,6 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         if (self.indicator['bb_weight'] <= -20):
             #熊市
             if (self.kdj_sell_indicate):
-                print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
                 self.mfi_sell_indicate = 0
                 self.kdj_sell_indicate = 0
                 return True
