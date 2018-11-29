@@ -402,18 +402,15 @@ def pick_time_kdj():
                     'debug':False}]
 
     #sell factors
-    sell_factor1 = {'class': AbuFactorSellKDJ}
+    #sell_factor1 = {'class': AbuFactorSellKDJ}
         
-    """
     sell_factor1 = {'class': AbuFactorSellCurveProjection,
         'mfi_threshold':80,
         'k_threshold':50,
         'd_threshold':50,
         'j_threshold':90
         }
-    """
 
-    """
     # 趋势跟踪策略止盈要大于止损设置值，这里0.5，3.0
     sell_factor2 = {'stop_loss_n': 0.5, 'stop_win_n': 3.0, 'class': AbuFactorAtrNStop}
     # 暴跌止损卖出因子形成dict
@@ -422,9 +419,9 @@ def pick_time_kdj():
     sell_factor4 = {'class': AbuFactorCloseAtrNStop, 'close_atr_n': 1.5}
     # 四个卖出因子同时生效，组成sell_factors
     sell_factors = [sell_factor1, sell_factor2, sell_factor3, sell_factor4]
-    """
 
-    sell_factors = [sell_factor1]
+    sell_factors = [sell_factor1, sell_factor2]
+    #sell_factors = [sell_factor1, sell_factor2, sell_factor3]
 
 
     #A股，永不可能，相当于不丢弃单子，这里缺省使用的均值滑点
@@ -442,10 +439,10 @@ def pick_time_kdj():
     kl_pd_manager = AbuKLManager(benchmark, capital)
 
     # 获取symbol的交易数据
-    symbol = '002236' #大华股份
+    #symbol = '002236' #大华股份
     #symbol = '000002'
     #symbol = '600309'
-    #symbol = '601398' #工商银行
+    symbol = '601398' #工商银行
     kl_pd = kl_pd_manager.get_pick_time_kl_pd(symbol)
 
     """
@@ -492,7 +489,20 @@ def pick_time_kdj():
             new_orders.append(abu_worker.orders[i+1])
 
     abu_worker.orders = new_orders
-    print(abu_worker.orders)
+
+    #print(abu_worker.orders)
+    #计算收益
+    profits = 0
+    for i, order in enumerate(abu_worker.orders):
+        if order.sell_date is None:
+            continue
+        profit = (order.sell_price - order.buy_price) * order.buy_cnt
+        profits += profit
+
+        print(order)
+        print("this order profit ", profit)
+
+    print("total profits = %.2f" %(profits))
     
     """
     orders = [abu_worker.orders[0]]
@@ -509,6 +519,7 @@ def pick_time_kdj():
     ABuTradeExecute.apply_action_to_capital(capital, action_pd, kl_pd_manager)
     capital.capital_pd.capital_blance.plot()
     plt.show()
+
 
 def pick_stock_kdj():
     abupy.env.disable_example_env_ipython()

@@ -13,7 +13,7 @@ import pandas as pd
 
 from ..IndicatorBu import ABuNDKdj
 from ..IndicatorBu import ABuNDMfi
-from ..UtilBu import ABuDateUtil
+from ..UtilBu import ABuDateUtil, AbuMaSplit
 
 from .ABuFactorSellBase import AbuFactorSellBase, ESupportDirection
 
@@ -24,6 +24,9 @@ __weixin__ = 'peng'
 class AbuFactorSellCurveProjection(AbuFactorSellBase):
 
     def _init_self(self, **kwargs):
+
+    
+        self.mean_split = AbuMaSplit(self.kl_pd, **kwargs)
 
         self.fastk_period = kwargs.pop('fastk_period', 9)
         self.slowk_period = kwargs.pop('slowk_period', 3)
@@ -51,6 +54,8 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         self.kdj_sell_indicate = 0
 
 
+        self.mean_split.calc_trend_weight()
+
 
         self.sell_type_extra = '{}:sell_n={}'.format(self.__class__.__name__, self.j_threshold)
 
@@ -72,39 +77,62 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         mfi = self._param_pd.MFI[self.today_ind]
 
         if j_value >= self.j_threshold:
-            print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
-            #print (self._param_pd.MFI[self.today_ind - 5:self.today_ind + 5])
             self.kdj_sell_indicate = self.kdj_sell_indicate + 1
-            print("********mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
 
         if (mfi > self.mfi_threshold):
-            print (self._param_pd.MFI[self.today_ind])
-            #print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
             self.mfi_sell_indicate = self.mfi_sell_indicate + 1
-            print("------mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
 
 
         #if (self.mfi_sell_indicate and self.kdj_sell_indicate):
-        if (self.mfi_sell_indicate or self.kdj_sell_indicate):
-        #if (self.mfi_sell_indicate):
+        #if (self.mfi_sell_indicate or self.kdj_sell_indicate):
+        if (self.indicator['bb_weight'] >= 20):
+            #牛市
+            if (self.mfi_sell_indicate):
+                print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
+                self.mfi_sell_indicate = 0
+                self.kdj_sell_indicate = 0
+                return True
 
-            print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
-            self.mfi_sell_indicate = 0
-            self.kdj_sell_indicate = 0
-            print("--- Sell stock at ", ABuDateUtil.fmt_date(today.date), "(j, mfi) = ", j_value, mfi)
-            return True
+        if (self.indicator['bb_weight'] <= -20):
+            #熊市
+            if (self.kdj_sell_indicate):
+                print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
+                self.mfi_sell_indicate = 0
+                self.kdj_sell_indicate = 0
+                return True
+        
 
         return False
 
+
+    def _show_info(self, date, dict):
+        print(ABuDateUtil.fmt_date(date), ' sell signal, indicator: ')
+        for key,value in dict.items():
+            print('    {key}:{value}'.format(key = key, value = value))
+        print(' ')
+
     def fit_day(self, today, orders):
+
+        mean_split = self.mean_split
+        mean_split.today_ind = self.today_ind
+        self.indicator = mean_split.fit_day(today)
+
+        #use today
+        k_value = self._param_pd.KDJ_K[self.today_ind]
+        d_value = self._param_pd.KDJ_D[self.today_ind]
+        j_value = self._param_pd.KDJ_J[self.today_ind]
+
+        kdj = [k_value, d_value, j_value]
+        self.indicator['kdj'] = kdj
+        self.indicator['mfi'] = self._param_pd.MFI[self.today_ind]
+
+    
         
-        #print("order len =======", len(orders))
         for order in orders:
             if order.sell_date != None:
                 continue
             if self.strategy_1(today):
-                print(ABuDateUtil.fmt_date(today.date), "######## sell tomorrow")
-                #print(ABuDateUtil.fmt_date(today.date), order)
+                self._show_info(today.date, self.indicator)
                 self.sell_tomorrow(order)
 
 

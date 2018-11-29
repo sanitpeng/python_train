@@ -84,6 +84,9 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
         self.factor_name = '{}:{}'.format(self.__class__.__name__, self.j_threshold )
 
     def _show_info(self, date, dict):
+        if self.debug == False :
+            return
+
         print(ABuDateUtil.fmt_date(date), ' buy signal, indicator: ')
         for key,value in dict.items():
             print('    {key}:{value}'.format(key = key, value = value))

@@ -97,13 +97,15 @@ class AbuMaSplit():
     def calc_trend_weight(self):
 
         #计算均线
-        #计算牛熊线 60日均线
+        #计算牛熊线 60日均线, 有可能，在buy factor已经计算过了
         bear_bull_array = self._calc_ma(self.bear_bull_period)
-        self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma_bear_bull', bear_bull_array)
+        if 'ma_bear_bull' not in self.kl_pd.columns.tolist():
+            self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma_bear_bull', bear_bull_array)
 
-        #计算n日均线
+        #计算n日均线, 有可能在buy factor已经计算过了
         ma_array = self._calc_ma(self.ma_period)
-        self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma', ma_array)  
+        if 'ma' not in self.kl_pd.columns.tolist():
+            self.kl_pd.insert(len(self.kl_pd.columns.tolist()), 'ma', ma_array)  
 
         #print(self.kl_pd)
         
