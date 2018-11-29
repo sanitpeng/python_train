@@ -46,7 +46,7 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
                 'MFI'  : mfi
         })
 
-        print (self._param_pd)
+        #print (self._param_pd)
         self.mfi_sell_indicate = 0
         self.kdj_sell_indicate = 0
 
@@ -74,37 +74,37 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         if j_value >= self.j_threshold:
             print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
             #print (self._param_pd.MFI[self.today_ind - 5:self.today_ind + 5])
-            print("********mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
             self.kdj_sell_indicate = self.kdj_sell_indicate + 1
+            print("********mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
 
         if (mfi > self.mfi_threshold):
             print (self._param_pd.MFI[self.today_ind])
             #print (ABuDateUtil.fmt_date(today.date), '(k, d, j) = (%f, %f, %f) ' %(k_value, d_value, j_value))
+            self.mfi_sell_indicate = self.mfi_sell_indicate + 1
             print("------mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
 
-            self.mfi_sell_indicate = self.mfi_sell_indicate + 1
 
+        #if (self.mfi_sell_indicate and self.kdj_sell_indicate):
+        if (self.mfi_sell_indicate or self.kdj_sell_indicate):
+        #if (self.mfi_sell_indicate):
 
-        if (self.mfi_sell_indicate and self.kdj_sell_indicate):
-
+            print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
             self.mfi_sell_indicate = 0
             self.kdj_sell_indicate = 0
             print("--- Sell stock at ", ABuDateUtil.fmt_date(today.date), "(j, mfi) = ", j_value, mfi)
-            print("mfi, j indicate ", self.mfi_sell_indicate, self.kdj_sell_indicate)
             return True
 
         return False
 
     def fit_day(self, today, orders):
         
-        print("order len =======", len(orders))
+        #print("order len =======", len(orders))
         for order in orders:
-            print("*********", type(order))
             if order.sell_date != None:
                 continue
             if self.strategy_1(today):
-                print("######## sell tomorrow")
-                print(ABuDateUtil.fmt_date(today.date), order)
+                print(ABuDateUtil.fmt_date(today.date), "######## sell tomorrow")
+                #print(ABuDateUtil.fmt_date(today.date), order)
                 self.sell_tomorrow(order)
                 #self.sell_today(order) if self.is_sell_today else self.sell_tomorrow(order)
 

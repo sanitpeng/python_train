@@ -66,6 +66,13 @@ class AbuOrder(object):
         # 仓位管理类设置
         position_class = factor_object.position_class
         # 初始资金，也可修改策略使用剩余资金
+        """
+        here should be use 剩余资金，如何修改？？sanit.peng
+        感觉facotor的captial,并没有参与运算
+        
+        print(factor_object.capital.capital_pd['cash_blance'])
+        print(factor_object.capital.capital_pd['stocks_blance'])
+        """
         read_cash = factor_object.capital.read_cash
         # 实例化滑点类
         fact = slippage_class(kl_pd_buy, factor_name)

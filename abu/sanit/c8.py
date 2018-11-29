@@ -40,6 +40,7 @@ from abupy import EMarketDataFetchMode
 from abupy import EMarketSourceType
 from abupy import EMarketTargetType
 from abupy import EDataCacheType
+from abupy import ABuDateUtil
 
 warnings.filterwarnings('ignore')
 sns.set_context(rc={'figure.figsize': (14, 7)})
@@ -380,11 +381,37 @@ def pick_time_CurveProjection():
 
 def pick_time_kdj():
     # buy factors 
-    buy_factors = [{'class': AbuFactorBuyKDJ, 'ma_period': 10}]
-    
+
+    """
+    #工商银行
+    buy_factors = [{'class': AbuFactorBuyKDJ, 'ma_period': 10,
+                    'k_threshold':20, 'd_threshold':20, 'j_threshold':20}]
+
+    """
+
+    """
+    #大华股份，熊市的买点
+    buy_factors = [{'class': AbuFactorBuyKDJ, 'ma_period': 10,
+                    'k_threshold':25, 'd_threshold':25, 'j_threshold':25}]
+
+    """
+
+    #大华股份，牛市买点
+    buy_factors = [{'class': AbuFactorBuyKDJ, 'ma_period': 10,
+                    'k_threshold':60, 'd_threshold':60, 'j_threshold':0,
+                    'debug':False}]
 
     #sell factors
     sell_factor1 = {'class': AbuFactorSellKDJ}
+        
+    """
+    sell_factor1 = {'class': AbuFactorSellCurveProjection,
+        'mfi_threshold':80,
+        'k_threshold':50,
+        'd_threshold':50,
+        'j_threshold':90
+        }
+    """
 
     """
     # 趋势跟踪策略止盈要大于止损设置值，这里0.5，3.0
@@ -402,6 +429,11 @@ def pick_time_kdj():
 
     #A股，永不可能，相当于不丢弃单子，这里缺省使用的均值滑点
     abupy.slippage.sbm.g_open_down_rate = 0.11
+    #仓位控制 100%
+    abupy.beta.position.g_pos_max = 1.0
+    #系统缺省使用了atr仓位控制器
+    abupy.beta.atr.g_atr_pos_base = 1.0
+
     
     #benchmark = AbuBenchmark()
     benchmark = AbuBenchmark(n_folds = 2)
@@ -410,10 +442,10 @@ def pick_time_kdj():
     kl_pd_manager = AbuKLManager(benchmark, capital)
 
     # 获取symbol的交易数据
-    #symbol = '002236'
+    symbol = '002236' #大华股份
     #symbol = '000002'
     #symbol = '600309'
-    symbol = '601398'
+    #symbol = '601398' #工商银行
     kl_pd = kl_pd_manager.get_pick_time_kl_pd(symbol)
 
     """
@@ -443,20 +475,39 @@ def pick_time_kdj():
     #print("bear_bull peaks", factor._bear_bull_peaks)
 
 
+    #print(abu_worker.orders)
+
+    #合并相邻的订单
+    new_orders = []
+    new_orders.append(abu_worker.orders[0])
+
+    for i, order in enumerate(abu_worker.orders):
+        if (i == len(abu_worker.orders) - 1):
+            break
+        d = ABuDateUtil.diff(abu_worker.orders[i+1].buy_date, order.buy_date)
+        #print(d)
+        
+        if (d > 3):
+            new_orders.append(abu_worker.orders[i+1])
+
+    abu_worker.orders = new_orders
+    print(abu_worker.orders)
+    
+    """
     orders = [abu_worker.orders[0]]
     orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(orders, kl_pd, draw=True, 
         ext_list = factor_summary)
 
-    #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
-    #    ext_list = factor_summary)
+    """
+
+    orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
+        ext_list = factor_summary)
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False, 
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False)
 
-    """
     ABuTradeExecute.apply_action_to_capital(capital, action_pd, kl_pd_manager)
     capital.capital_pd.capital_blance.plot()
     plt.show()
-    """
 
 def pick_stock_kdj():
     abupy.env.disable_example_env_ipython()
@@ -633,15 +684,15 @@ def init_env():
     abupy.env.disable_example_env_ipython()
     #bd source have some data error, for example, 002236, some date error, for kdj
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
-    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_nt
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tdx
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tdx
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
-    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
-    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
 
 if __name__ == "__main__":

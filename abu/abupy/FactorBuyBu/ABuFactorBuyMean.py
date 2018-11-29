@@ -34,9 +34,14 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         self.ma_period = 30
         if 'ma_period' in kwargs:
             self.ma_period = kwargs['ma_period']        
+
         self.bear_bull_period = 60
         if 'bear_bull_period' in kwargs:
             self.bear_bull_period = kwargs['bear_bull_period']        
+
+        self.bull_bear_delta = 3 
+        if 'bull_bear_delta' in kwargs:
+            self.bull_bear_delta = kwargs['bull_bear_delta']        
 
         # 在输出生成的orders_pd中显示的名字
         self.factor_name = '{}:period={}'.format(self.__class__.__name__, self.ma_period)
@@ -107,8 +112,34 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         #找出牛熊线的拐点，但是不切片原始数据 source_pd = None
         self._bear_bull_peaks, _ = self.split_by_peak(bear_bull_array, source_pd = None, 
             threshold = 1, min_dist = 150)
-        #print("bear bull marker peaks: ",)
         #print(self._bear_bull_peaks)
+
+
+        """
+        show the information of slices
+        """
+        kl_pd = self.kl_pd
+        print("牛熊线数据:")
+        print("开始日期   结束日期     开始价格   结束价格    角 度     步长    斜率验证")
+        for i, peak in enumerate(self._bear_bull_peaks):
+
+            if (i == len(self._bear_bull_peaks) - 1):
+                break
+            #时间
+            start = kl_pd.date[peak]
+            end = kl_pd.date[self._bear_bull_peaks[i+1]]
+            step = self._bear_bull_peaks[i+1] - peak
+
+
+            print(ABuDateUtil.fmt_date(start), ABuDateUtil.fmt_date(end), 
+                "  %.3f      %.3f       %.3f     %d" 
+                %(kl_pd.close[peak], kl_pd.close[self._bear_bull_peaks[i+1]], 0.0, step))
+
+
+
+
+
+
 
         #根据拐点切片均线数据
         self._peaks, self._slices = self.split_by_peak(ma_array, source_pd = self.kl_pd,
@@ -149,7 +180,7 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         show the information of slices
         """
 
-        print("切片数据:")
+        print("均线切片数据:")
         print("开始日期   结束日期     开始价格   结束价格    角 度     步长    斜率验证")
         for i, slice in enumerate(self._slices):
             #时间
@@ -301,16 +332,10 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
     def _find_left(self, index, peaks):
         #返回 pre left, left
 
-        """
-        for i, peak in enumerate(peaks):
-            if ( i == 0 ): continue
-            if index > peak :
-                return peaks[i-1], peak
-        """ 
-
         #先反转peaks, 这样，从后往前找，
         peaks = peaks.tolist()
         peaks.reverse()
+
         #print(peaks)
         #print("index = ", index)
 
@@ -318,10 +343,11 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         for i, peak in enumerate(peaks):
             #print("i, peak, index", i, peak, index) 
             if index > peak :
+                #说明找到了最近的一个peak
                 if (peak == 0 ):
                     return 0, peak
                 else:
-                    return peak, peaks[i+1]
+                    return peaks[i-1], peak
  
         #如果到这里，说明错误
         return 0, 0
@@ -447,6 +473,39 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
 
         return deg, total_days
 
+    def _bull_bear_weight(self, price, today_ma, left_ma):
+       
+        delta = ((price - today_ma) / today_ma) * 100
+        if (today_ma < left_ma):
+            #牛熊均线在下降，倾向于熊市
+            weight = -20
+        else:
+            #牛熊均线在上升，倾向于牛市
+            weight = 20
+
+            if (price < today_ma) :
+                #print("牛市，但今日价格低于牛熊分界，倾向于，牛市中的中继下跌，发出观望警告， 不参与交易")
+                weight = 15 
+       
+        #如果今日价格和今日牛熊均线在delta附近，说明是在震荡，不参与交易
+        if (abs(delta) < self.bull_bear_delta):
+            if (delta < 0):
+                weight = -5
+            else:
+                #也就是 price > today_ma (delta > 0) > left_ma, 同时delta > 1%
+                #认为是牛市
+                if (price > left_ma and delta > 1): weight = 20
+                else: weight = 5
+                #weight = 5
+                date = self.kl_pd.date[self.today_ind]
+                print(ABuDateUtil.fmt_date(date), "bull bear weight: delta", weight, delta)
+
+        #print("bull bear weight: delta", weight, delta)
+        
+        return weight
+
+
+
 
     def fit_day(self, today):
         kl_pd = self.kl_pd
@@ -454,28 +513,16 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         #根据牛熊均线判断牛熊
         #寻找今天的左端点和左左端点
         pre_left, left = self._find_left(self.today_ind, self._bear_bull_peaks)
-        #print("pre_left, left:", pre_left, left)
-        #print(kl_pd.close[pre_left], kl_pd.close[left])
 
         price = kl_pd.close[self.today_ind]
 
-        #牛熊的权重，+-10,是均衡市场， > 20 - 100 牛市 <-(20 -100) 熊市
-        self.bull_bear_weight = 0
+        #牛熊的权重，-19-19,是均衡市场,牛熊转化， > 20 - 100 牛市 <-(20 -100) 熊市
+        self.bull_bear_weight = self._bull_bear_weight(price, 
+            kl_pd.ma_bear_bull[self.today_ind], kl_pd.ma_bear_bull[left])
 
-        if (kl_pd.close[left] > kl_pd.close[pre_left]):
-            #目前在下降通道，熊市
-            #print("现在是熊市 :")
-            self.bull_bear_weight = -20
-        else:
-            #目前在上升通道，牛市
-            #print("现在是牛市 :")
-            self.bull_bear_weight = 20
 
-            if (price < kl_pd.ma_bear_bull[self.today_ind]) :
-                #print("牛市，但今日价格低于牛熊分界，发出警告，weight < -50 不参与交易")
-                self.bull_bear_weight = self.bull_bear_weight - 100
 
-        #print("bull bear weight: ", self.bull_bear_weight)
+        #计算日权重
 
         _, left = self._find_left(self.today_ind, self._peaks)
         deg, self.total_days = self._day_weight(left, self.bull_bear_weight)
@@ -483,8 +530,6 @@ class AbuMaSplit(AbuFactorBuyBase, BuyCallMixin):
         #print(ABuDateUtil.fmt_date(today.date), " bb weight = %d arg = %f, run days %d" 
         #    %(self.bull_bear_weight, deg, self.total_days))
 
-        #print("left peak", ABuDateUtil.fmt_date(kl_pd.date[left]), "price is ",  
-        #    self.kl_pd.close[left])
 
         extreme = 0
         if deg < -100 : 

@@ -53,9 +53,22 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
 
         
         self.k_threshold = 10
+        if 'k_threshold' in kwargs:
+            self.k_threshold = kwargs['k_threshold']        
+
         self.d_threshold = 20
+        if 'd_threshold' in kwargs:
+            self.d_threshold = kwargs['d_threshold']        
+
         self.j_threshold = 0
-       
+        if 'j_threshold' in kwargs:
+            self.j_threshold = kwargs['j_threshold']        
+
+        self.debug = False 
+        if 'debug' in kwargs:
+            self.debug = kwargs['debug']        
+
+
 
         #buld the symbol's kdj
         k, d, j = ABuNDKdj.calc_kdj(self.kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
@@ -92,7 +105,6 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         j_value = self._param_pd.KDJ_J[self.today_ind]
 
         kdj = [k_value, d_value, j_value]
-
         self.indicator['kdj'] = kdj
 
 
@@ -126,12 +138,46 @@ class AbuFactorBuyKDJ(AbuMaSplit, BuyCallMixin):
         if (self.indicator['ma'] <= 0): return None
 
 
-        #if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
+        """
         #if j_value < self.j_threshold and k_value < self.k_threshold :
-        if j_value < self.j_threshold or d_value < self.d_threshold or k_value < self.k_threshold :
-            # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
-            self._show_info(today.date, self.indicator)
+        #if j_value < self.j_threshold or d_value < self.d_threshold or k_value < self.k_threshold :
+        """
 
-            return self.buy_tomorrow()
+        #当前个股的牛熊权重-20 ---- 20, 说明在牛熊转换期间，并且很有可能是牛转熊，不参与交易
+        weight = abs(self.indicator['bb_weight'])
+        if (weight < 20):
+
+            if (self.indicator['bb_weight'] > 10):    
+
+                if (self.debug):
+                    print(ABuDateUtil.fmt_date(today.date),
+                        "牛熊交界，价格低于牛熊分界，倾向牛市上涨中继， 不参与交易 weight = %d"
+                        %(self.indicator['bb_weight']))
+                return None
+
+            if (self.debug):
+                print(ABuDateUtil.fmt_date(today.date), 
+                    "牛熊交界,不参与交易 weight = %d" %(self.indicator['bb_weight']))
+
+            return None
+
+        
+        if (self.indicator['bb_weight'] >= 20):
+            #牛市策略
+            if j_value < 0 :
+                # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
+                self._show_info(today.date, self.indicator)
+                return self.buy_tomorrow()
+            return None 
+
+
+        if (self.indicator['bb_weight'] <= -20):
+            #熊市策略
+            if j_value < 20 and d_value < 20 and k_value < 20 :
+                # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
+                self._show_info(today.date, self.indicator)
+                return self.buy_tomorrow()
+            return None
+    
         return None
 

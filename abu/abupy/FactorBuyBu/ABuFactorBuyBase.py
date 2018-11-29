@@ -238,6 +238,11 @@ class AbuFactorBuyBase(six.with_metaclass(ABCMeta, AbuParamBase)):
             else:
                 order.ml_features.update(ml_feature_dict)
         # 返回order，订单生效
+
+        #should calculate the cash_balance ???,  by sanit.peng
+        #self.capital.buy_stock(order)
+        #print(self.capital.capital_pd['cash_blance'])
+
         return order
 
     def make_ump_block_decision(self, ml_feature_dict):
