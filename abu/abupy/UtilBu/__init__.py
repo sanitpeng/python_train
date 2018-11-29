@@ -15,6 +15,7 @@ from . import ABuKLUtil
 from . import ABuOsUtil
 
 from .ABuProgress import AbuProgress, AbuBlockProgress, AbuMulPidProgress
+from .ABuMeanSplit import AbuMaSplit
 
 __all__ = [
     'ABuDateUtil',
@@ -32,5 +33,6 @@ __all__ = [
     'AbuMulPidProgress',
     'ABuPlatform',
     'ABuKLUtil',
-    'ABuOsUtil'
+    'ABuOsUtil',
+    'AbuMaSplit'
 ]

@@ -12,10 +12,7 @@ import math
 import numpy as np
 import pandas as pd
 
-from .ABuFactorBuyBase import AbuFactorBuyBase, BuyCallMixin
 from ..IndicatorBu.ABuNDMa import calc_ma_from_prices, calc_ma
-from ..CoreBu.ABuPdHelper import pd_resample
-from ..TLineBu.ABuTL import AbuTLine
 from ..UtilBu import ABuRegUtil, ABuDateUtil
 
 __author__ = 'sanit.peng'
@@ -23,7 +20,7 @@ __weixin__ = 'sanit'
 
 
 class AbuMaSplit():
-    """买入动态自适应均线策略"""
+    """计算牛熊，权重，均线策略"""
 
     def __init__(self, kl_pd, **kwargs):
         """

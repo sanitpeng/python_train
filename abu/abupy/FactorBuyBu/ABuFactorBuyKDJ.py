@@ -10,10 +10,9 @@ from __future__ import division
 import pandas as pd
 
 from ..IndicatorBu import ABuNDKdj
-from ..UtilBu import ABuDateUtil
+from ..UtilBu import ABuDateUtil, AbuMaSplit
 
 from .ABuFactorBuyBase import AbuFactorBuyBase, AbuFactorBuyXD, BuyCallMixin, BuyPutMixin
-from .ABuMeanSplit import AbuMaSplit
 
 __author__ = 'sanit.peng'
 __weixin__ = 'sanit'
