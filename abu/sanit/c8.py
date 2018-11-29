@@ -405,7 +405,7 @@ def pick_time_kdj():
     #sell_factor1 = {'class': AbuFactorSellKDJ}
         
     sell_factor1 = {'class': AbuFactorSellCurveProjection,
-        'mfi_threshold':80,
+        'mfi_threshold':85,
         'k_threshold':50,
         'd_threshold':50,
         'j_threshold':90
@@ -420,7 +420,8 @@ def pick_time_kdj():
     # 四个卖出因子同时生效，组成sell_factors
     sell_factors = [sell_factor1, sell_factor2, sell_factor3, sell_factor4]
 
-    sell_factors = [sell_factor1, sell_factor2]
+    sell_factors = [sell_factor1]
+    #sell_factors = [sell_factor1, sell_factor2]
     #sell_factors = [sell_factor1, sell_factor2, sell_factor3]
 
 
@@ -441,6 +442,7 @@ def pick_time_kdj():
     # 获取symbol的交易数据
     #symbol = '002236' #大华股份
     #symbol = '000002'
+    #symbol = '601939' #建设银行
     #symbol = '600309'
     symbol = '601398' #工商银行
     kl_pd = kl_pd_manager.get_pick_time_kl_pd(symbol)
@@ -490,11 +492,11 @@ def pick_time_kdj():
 
     abu_worker.orders = new_orders
 
-    #print(abu_worker.orders)
     #计算收益
     profits = 0
     for i, order in enumerate(abu_worker.orders):
         if order.sell_date is None:
+            print(order)
             continue
         profit = (order.sell_price - order.buy_price) * order.buy_cnt
         profits += profit
@@ -514,8 +516,11 @@ def pick_time_kdj():
     orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
         ext_list = factor_summary)
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False, 
+    #    ext_list = factor_summary)
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False)
 
+
+    print(action_pd)
     ABuTradeExecute.apply_action_to_capital(capital, action_pd, kl_pd_manager)
     capital.capital_pd.capital_blance.plot()
     plt.show()
@@ -696,15 +701,15 @@ def init_env():
     abupy.env.disable_example_env_ipython()
     #bd source have some data error, for example, 002236, some date error, for kdj
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
-    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_nt
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_nt
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tdx
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
-    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
-    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
 
 if __name__ == "__main__":

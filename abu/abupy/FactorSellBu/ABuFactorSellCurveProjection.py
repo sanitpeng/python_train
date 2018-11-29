@@ -128,6 +128,7 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
             if order.sell_date != None:
                 continue
             if self.strategy_1(today):
+                #print("order buy date", ABuDateUtil.fmt_date(order.buy_date))
                 self._show_info(today.date, self.indicator)
                 self.sell_tomorrow(order)
 
