@@ -68,7 +68,12 @@ def create_table(tbl_name, engine):
 if __name__ == "__main__":
 
 
-    fl = file_list('/Users/sanit/abu/data/tdx_csv')
+    fl = file_list('/Users/sanit/abu/data/tdx_csv/Volumes/export')
+
+    """
+    csv2sql('/Users/sanit/abu/data/tdx_csv/Volumes/export/SZ#300579.csv', 
+        'SZ#300579', engine)
+    """
 
     len = len(fl)
     for i, l in enumerate(fl):
