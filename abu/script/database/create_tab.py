@@ -29,6 +29,16 @@ def read_sql(engine):
 def csv2sql(fn, table, engine):
 
     try:
+        #sh000001，999999都是上证综指，
+        """
+        if table == 'SH#000001':
+            print("what ???????", fn)
+            return
+        “”“
+
+        if table == 'SH#999999':
+            table = 'SH#000001'
+
         df = pd.read_csv(fn)
         df.to_sql(table, con=engine, if_exists='replace', index=False)
     except Exception as e:
@@ -78,7 +88,8 @@ if __name__ == "__main__":
     len = len(fl)
     for i, l in enumerate(fl):
         csv2sql(l[0], l[1], engine)
-        print("处理%s, 完成进度百分之%d" %( l[0], (float(i+1)/len)*100 ), end="\r" )
+        #print("处理%s, 完成进度百分之%d" %( l[0], (float(i+1)/len)*100 ), end="\r" )
+        print("处理%s, 完成进度百分之%d" %( l[0], (float(i+1)/len)*100 ) )
     
     print("\n")
 

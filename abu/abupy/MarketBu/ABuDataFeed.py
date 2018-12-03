@@ -384,6 +384,89 @@ class TDXApi(StockBaseMarket, SupportMixin):
 
 
 
+#通达讯API接口，因为是收费，实际上读取sql数据库
+from sqlalchemy import create_engine
+import json
+
+class TDXDBApi(StockBaseMarket, SupportMixin):
+    """通达讯数据源，支持a股"""
+
+
+    def __init__(self, symbol):
+        """
+        :param symbol: Symbol类型对象
+        """
+        super(TDXDBApi, self).__init__(symbol)
+        # 设置数据源解析对象类
+        self.data_parser_cls = TDXParser
+
+        host = 'localhost'
+        db = 'stock_db'
+        user = 'root'
+        password = '11111111'
+
+        self.engine = create_engine(str(r"mysql+mysqldb://%s:" + '%s' + "@%s/%s?charset=utf8")
+            % (user, password, host, db))
+
+    def get_kline_sql(self, table, year = None):
+
+        start = year * 10000 + 101
+        end = year * 10000 + 1231
+        try:
+            sql = 'select * from `%s` where date >= %d and date <= %d' %(table, start, end)
+            #print(sql)
+            df = pd.read_sql(sql=sql, con=self.engine)
+        except Exception as e:
+            print(e.message)
+
+        #返回json字符串，模拟网络返回
+        return df.to_json(orient='table')
+
+
+    def kline(self, n_folds=2, start=None, end=None):
+        """日k线接口"""
+        kl_df = None
+        if start is None or end is None:
+            end_year = int(ABuDateUtil.current_str_date()[:4])
+            start_year = end_year - n_folds + 1
+        else:
+            start_year = int(start[:4])
+            end_year = int(end[:4])
+        req_year = list(range(start_year, end_year + 1))
+
+        if self._symbol.market == EMarketTargetType.E_MARKET_TARGET_CN:
+            market = self._symbol.market.value
+            symbol = self._symbol.symbol_code
+            if self._symbol.is_sz_stock():
+                symbol = 'SZ#{}'.format(symbol)
+            else:
+                symbol = 'SH#{}'.format(symbol)
+        else:
+            raise TypeError('TDXDBApi dt support {}'.format(self._symbol.market))
+
+        #now load all datas in one symbol
+
+        #print(req_year)
+
+        for year in req_year:
+            data = self.get_kline_sql(symbol, year)
+            temp_df = None
+            if data is not None:
+                #把json 字符串转换成字典
+                data = json.loads(data)
+                temp_df = self.data_parser_cls(self._symbol, data).df
+            if temp_df is not None:
+                kl_df = temp_df if kl_df is None else kl_df.append(temp_df)
+
+        if kl_df is None:
+            return None
+        return StockBaseMarket._fix_kline_pd(kl_df, n_folds, start, end)
+
+    def minute(self, n_fold=5, *args, **kwargs):
+        """分钟k线接口"""
+        raise NotImplementedError('TDXDBApi minute NotImplementedError!')
+
+
 
 
 class SNUSApi(StockBaseMarket, SupportMixin):

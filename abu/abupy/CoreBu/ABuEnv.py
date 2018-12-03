@@ -219,6 +219,7 @@ class EMarketSourceType(Enum):
     #add by sanit.peng
     """通达讯 A股"""
     E_MARKET_SOURCE_tdx = 4
+    E_MARKET_SOURCE_tdx_db = 5
 
     """新浪 国内期货"""
     E_MARKET_SOURCE_sn_futures = 100
