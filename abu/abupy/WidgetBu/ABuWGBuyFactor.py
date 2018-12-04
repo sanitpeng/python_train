@@ -10,6 +10,7 @@ import ipywidgets as widgets
 from ..WidgetBu.ABuWGBFBase import WidgetFactorBuyBase
 from ..FactorBuyBu.ABuFactorBuyBreak import AbuFactorBuyBreak
 from ..FactorBuyBu.ABuFactorBuyDM import AbuDoubleMaBuy
+from ..FactorBuyBu.ABuFactorBuyKDJ import AbuFactorBuyKDJ
 from ..FactorBuyBu.ABuFactorBuyWD import AbuFactorBuyWD
 from ..FactorBuyBu.ABuFactorBuyDemo import AbuSDBreak, AbuWeekMonthBuy
 from ..FactorBuyBu.ABuFactorBuyTrend import AbuDownUpTrend
@@ -391,3 +392,98 @@ class BuyDUWidget(WidgetFactorBuyBase):
     def delegate_class(self):
         """子类因子所委托的具体因子类AbuDownUpTrend"""
         return AbuDownUpTrend
+
+#by sanit.peng
+class BuyKDJWidget(WidgetFactorBuyBase):
+    """对应AbuFactorBuyKDJ策略widget"""
+
+    def _init_widget(self):
+        """构建AbuFactorBuyKDJ策略参数界面"""
+
+        self.description = widgets.Textarea(
+            value=u'KDJ双均线买入策略：\n'
+                  u'KDJ是标准的经典策略，其属于趋势跟踪策略: \n',
+            description=u'KDJ双均线买',
+            disabled=False,
+            layout=self.description_layout
+        )
+
+        self.kdj_label = widgets.Label(u'KDJ的值调整', layout=self.label_layout)
+        self.k_int = widgets.IntSlider(
+            value=20,
+            min=0,
+            max=100,
+            step=1,
+            description=u'K值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+        self.d_int = widgets.IntSlider(
+            value=20,
+            min=0,
+            max=100,
+            step=1,
+            description=u'D值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+        self.j_int = widgets.IntSlider(
+            value=10,
+            min=-10,
+            max=120,
+            step=1,
+            description=u'J值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+
+
+        self.kdj = widgets.VBox([self.k_int, self.d_int, self.j_int])
+        self.kdj_box = widgets.VBox([self.kdj_label, self.kdj])
+
+        self.ma_label = widgets.Label(u'调整快速均线值', layout=self.label_layout)
+        self.ma_int = widgets.IntSlider(
+            value=10,
+            min=1,
+            max=90,
+            step=1,
+            description=u'均线',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+        self.ma = widgets.VBox([self.ma_int])
+        self.ma_box = widgets.VBox([self.ma_label, self.ma])
+
+        self.widget = widgets.VBox([self.description, self.kdj_box, self.ma_box, self.add],  # border='solid 1px',
+                                   layout=self.widget_layout)
+
+    def make_buy_factor_unique(self):
+        """对应按钮添加AbuDoubleMaBuy策略，构建策略字典对象factor_dict以及唯一策略描述字符串factor_desc_key"""
+        k_int = self.k_int.value
+        d_int = self.d_int.value
+        j_int = self.j_int.value
+        ma_int = self.ma_int.value
+
+        factor_dict = {'class': AbuFactorBuyKDJ, 
+            'ma_period': ma_int, 
+            'k_threshold': k_int, 'd_threshold': d_int, 'j_threshold': j_int
+            }
+        factor_desc_key = u'KDJ均线买入'
+        return factor_dict, factor_desc_key
+
+    def delegate_class(self):
+        """子类因子所委托的具体因子类AbuDoubleMaBuy"""
+        return AbuFactorBuyKDJ
+
+       

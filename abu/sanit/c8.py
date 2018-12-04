@@ -442,9 +442,10 @@ def pick_time_kdj():
     # 获取symbol的交易数据
     #symbol = '002236' #大华股份
     #symbol = '000002'
-    #symbol = '601939' #建设银行
+    symbol = '601939' #建设银行
     #symbol = '600309'
-    symbol = '601398' #工商银行
+    #symbol = '601398' #工商银行
+    #symbol = '601319'  #few datas
     kl_pd = kl_pd_manager.get_pick_time_kl_pd(symbol)
 
     """
@@ -513,6 +514,7 @@ def pick_time_kdj():
 
     """
 
+
     orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=True, 
         ext_list = factor_summary)
     #orders_pd, action_pd, _ = ABuTradeProxy.trade_summary(abu_worker.orders, kl_pd, draw=False, 
@@ -531,10 +533,10 @@ def pick_stock_kdj():
     
     from abupy import EMarketTargetType
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
-    stock_pickers = [{'class': AbuPickKDJ, 'reversed': True}]
+    #stock_pickers = [{'class': AbuPickKDJ, 'reversed': True}]
 
-    #stock_pickers = [{'class': AbuPickKDJ,
-    #                  'threshold_ang_min': 0.0, 'reversed': False}]
+    stock_pickers = [{'class': AbuPickKDJ,
+                      'threshold_ang_min': 0.0, 'reversed': False}]
 
     # 从这几个股票里进行选股，只是为了演示方便
     # 一般的选股都会是数量比较多的情况比如全市场股票
@@ -702,8 +704,9 @@ def init_env():
     #bd source have some data error, for example, 002236, some date error, for kdj
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_nt
+    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_nt
     #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tdx
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tdx_db
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
@@ -729,6 +732,6 @@ if __name__ == "__main__":
     # sample_821_3()
     # sample_822()
     # sample_823()
-    # pick_stock_kdj()
-    pick_time_kdj()
+    pick_stock_kdj()
+    # pick_time_kdj()
     # pick_time_CurveProjection()

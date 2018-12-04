@@ -12,6 +12,7 @@ from ..FactorSellBu.ABuFactorCloseAtrNStop import AbuFactorCloseAtrNStop
 from ..FactorSellBu.ABuFactorPreAtrNStop import AbuFactorPreAtrNStop
 from ..FactorSellBu.ABuFactorSellBreak import AbuFactorSellBreak
 from ..FactorSellBu.ABuFactorSellDM import AbuDoubleMaSell
+from ..FactorSellBu.ABuFactorSellCurveProjection import AbuFactorSellCurveProjection
 from ..FactorSellBu.ABuFactorSellNDay import AbuFactorSellNDay
 from ..WidgetBu.ABuWGSFBase import WidgetFactorSellBase
 
@@ -308,3 +309,104 @@ class SellNDWidget(WidgetFactorSellBase):
     def delegate_class(self):
         """子类因子所委托的具体因子类AbuFactorSellNDay"""
         return AbuFactorSellNDay
+
+#by sanit.peng
+class SellCurveProjectionWidget(WidgetFactorSellBase):
+    """对应AbuFactorSellCurveProjection策略widget"""
+
+    def _init_widget(self):
+        """构建AbuFactorSellCurveProjection策略参数界面"""
+
+        self.description = widgets.Textarea(
+            value=u'曲线投影卖出策略：\n'
+                  u'价/量/时间是3维系统，每种指标是在2维的一个投影 \n',
+            description=u'曲线投影卖出',
+            disabled=False,
+            layout=self.description_layout
+        )
+
+        self.kdj_label = widgets.Label(u'KDJ的值调整', layout=self.label_layout)
+        self.k_int = widgets.IntSlider(
+            value=50,
+            min=0,
+            max=100,
+            step=1,
+            description=u'K值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+        self.d_int = widgets.IntSlider(
+            value=50,
+            min=0,
+            max=100,
+            step=1,
+            description=u'D值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+        self.j_int = widgets.IntSlider(
+            value=90,
+            min=-10,
+            max=120,
+            step=1,
+            description=u'J值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+
+
+        self.kdj = widgets.VBox([self.k_int, self.d_int, self.j_int])
+        self.kdj_box = widgets.VBox([self.kdj_label, self.kdj])
+
+
+        self.mfi_label = widgets.Label(u'调整MFI值', layout=self.label_layout)
+        self.mfi_int = widgets.IntSlider(
+            value=85,
+            min=0,
+            max=100,
+            step=1,
+            description=u'mfi',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+        self.mfi = widgets.VBox([self.mfi_int])
+        self.mfi_box = widgets.VBox([self.mfi_label, self.mfi])
+
+        self.widget = widgets.VBox([self.description, self.kdj_box, self.mfi_box, self.add],  
+            # border='solid 1px',
+            layout=self.widget_layout)
+
+
+
+
+    def make_sell_factor_unique(self):
+        """对应按钮添加AbuFactorSellCurveProjection策略，构建策略字典对象factor_dict以及唯一策略描述字符串factor_desc_key"""
+
+        k_int = self.k_int.value
+        d_int = self.d_int.value
+        j_int = self.j_int.value
+        mfi_int = self.mfi_int.value
+
+        factor_dict = {'class': AbuFactorSellCurveProjection, 
+            'mfi_threshold': mfi_int,
+            'k_threshold': k_int, 'd_threshold': d_int, 'j_threshold': j_int        
+            }
+        factor_desc_key = u'曲线投影mfi:{} j:{}卖出'.format(mfi_int, j_int)
+        return factor_dict, factor_desc_key
+
+    def delegate_class(self):
+        """子类因子所委托的具体因子类AbuFactorSellCurveProjection"""
+        return AbuFactorSellCurveProjection
+
+       

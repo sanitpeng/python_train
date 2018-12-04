@@ -24,6 +24,7 @@ class SellFactorWGManager(WidgetFactorManagerBase):
 
         from ..WidgetBu.ABuWGSellFactor import SellXDWidget, SellAtrNStopWidget, SellCloseAtrNWidget
         from ..WidgetBu.ABuWGSellFactor import SellPreAtrNWidget, SellDMWidget, SellNDWidget
+        from ..WidgetBu.ABuWGSellFactor import SellCurveProjectionWidget
 
         self.sf_array = []
         self.sf_array.append(SellAtrNStopWidget(self))
@@ -32,6 +33,7 @@ class SellFactorWGManager(WidgetFactorManagerBase):
         self.sf_array.append(SellXDWidget(self))
         self.sf_array.append(SellDMWidget(self))
         self.sf_array.append(SellNDWidget(self))
+        self.sf_array.append(SellCurveProjectionWidget(self))
 
         # sf() call用widget组list
         children = [sf() for sf in self.sf_array]
