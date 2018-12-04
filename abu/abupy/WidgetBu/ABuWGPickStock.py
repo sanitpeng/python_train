@@ -11,6 +11,7 @@ import numpy as np
 from ..PickStockBu.ABuPickRegressAngMinMax import AbuPickRegressAngMinMax
 from ..PickStockBu.ABuPickStockDemo import AbuPickStockShiftDistance, AbuPickStockNTop
 from ..PickStockBu.ABuPickStockPriceMinMax import AbuPickStockPriceMinMax
+from ..PickStockBu.ABuPickKDJ import AbuPickKDJ
 from ..WidgetBu.ABuWGPSBase import WidgetPickStockBase
 
 __author__ = '阿布'
@@ -297,3 +298,86 @@ class PSNTopWidget(WidgetPickStockBase):
     def delegate_class(self):
         """子类因子所委托的具体因子类AbuPickStockNTop"""
         return AbuPickStockNTop
+
+
+#by sanit.peng
+class PSKDJWidget(WidgetPickStockBase):
+    """对应AbuPickKDJ策略widget"""
+
+    def _init_widget(self):
+        """构建AbuPickKDJ策略参数界面"""
+
+        self.description = widgets.Textarea(
+            value=u'KDJ选股因子策略：\n',
+            description=u'KDJ选股',
+            disabled=False,
+            layout=self.description_layout
+        )
+
+        self.kdj_label = widgets.Label(u'KDJ的值调整', layout=self.label_layout)
+        self.k_int = widgets.IntSlider(
+            value=20,
+            min=0,
+            max=100,
+            step=1,
+            description=u'K值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+        self.d_int = widgets.IntSlider(
+            value=20,
+            min=0,
+            max=100,
+            step=1,
+            description=u'D值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+        self.j_int = widgets.IntSlider(
+            value=10,
+            min=-10,
+            max=120,
+            step=1,
+            description=u'J值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
+
+        self.kdj = widgets.VBox([self.k_int, self.d_int, self.j_int])
+        self.kdj_box = widgets.VBox([self.kdj_label, self.kdj])
+
+        self.widget = widgets.VBox([self.description, self.kdj_box, self.reversed_box, self.add],  
+            # border='solid 1px',
+            layout=self.widget_layout)
+
+
+    def make_pick_stock_unique(self):
+        """对应按钮添加AbuPickKDJ策略，构建策略字典对象factor_dict以及唯一策略描述字符串factor_desc_key"""
+
+        k_int = self.k_int.value
+        d_int = self.d_int.value
+        j_int = self.j_int.value
+
+        factor_dict = {'class': AbuPickKDJ,
+            'reversed': self.reversed.value,
+            'k_threshold': k_int, 'd_threshold': d_int, 'j_threshold': j_int
+            }
+
+        factor_desc_key = u'KDJ选股k:{} d:{} j:{},反转:{}'.format(
+            k_int, d_int, j_int, self.reversed.value)
+        return factor_dict, factor_desc_key
+
+    def delegate_class(self):
+        """子类因子所委托的具体因子类AbuPickKDJ"""
+        return AbuPickKDJ
+
+
+

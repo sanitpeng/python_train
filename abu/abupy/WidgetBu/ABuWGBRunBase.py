@@ -316,7 +316,7 @@ class WidgetRunTT(WidgetBase, WidgetEnvSetMixin, WidgetTimeModeMixin, WidgetMetr
         """初始化基础回测设置界面"""
         # 初始资金
         self.cash = widgets.BoundedIntText(
-            value=1000000,
+            value=100000,
             min=10000,
             max=999999999,
             step=1,
