@@ -475,8 +475,12 @@ class AbuMaSplit():
         return deg, total_days
 
     def _bull_bear_weight(self, price, today_ma, left_ma):
-       
-        delta = ((price - today_ma) / today_ma) * 100
+      
+        if (today_ma == 0):
+            delta = 0
+        else:
+            delta = ((price - today_ma) / today_ma) * 100
+
         if (today_ma < left_ma):
             #牛熊均线在下降，倾向于熊市
             weight = -20

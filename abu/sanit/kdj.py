@@ -39,41 +39,19 @@ STOCK_CAPITAL = 100000
 STOCK_SYMBOLS = ['002236']
 
 # 设置选股因子，None为不使用选股因子
-#kdj defaut (9, 3, 3) can be set use (fastk_period, slowk_period, fastd_period)
-#also k_threshold, d_threshold, j_threshold choice threshold should use those params, 
 
-stock_pickers = [{'class': AbuPickKDJ, 'reversed': False}]
-#stock_pickers = [{'class': AbuPickKDJ, 'reversed': True}]
+stock_pickers = [{'class': AbuPickKDJ, 'j_threshold':0, 'reversed': False}]
+#stock_pickers = [{'class': AbuPickKDJ, 'j_threshold':0, 'reversed': True}]
 
-# 买入因子依然延用向上突破因子
-buy_factors = [{'xd': 60, 'class': AbuFactorBuyBreak},
-               {'xd': 42, 'class': AbuFactorBuyBreak}]
-
-
-# 卖出因子继续使用上一章使用的因子
-sell_factors = [
-    {'stop_loss_n': 1.0, 'stop_win_n': 3.0,
-     'class': AbuFactorAtrNStop},
-    {'class': AbuFactorPreAtrNStop, 'pre_atr_n': 1.5},
-    {'class': AbuFactorCloseAtrNStop, 'close_atr_n': 1.5}
-]
-
-"""
-stock_pick.choice_symbols: ['sz002502', 'sz002751', 'sz002680', 'sz000040', 'sz002323', 'sh601009', 'sh600800', 'sz300510', 'sh600122', 'sz000538', 'sz000534', 'sz002411', 'sz002301', 'sz300041', 'sz300197', 'sz002485', 'sz300237', 'sz000981', 'sz002668', 'sz002665', 'sh600688', 'sz000545', 'sh603031', 'sz002558', 'sz000979', 'sz002408', 'sz300362', 'sz002602', 'sz300178', 'sz300280', 'sz002719', 'sz002711', 'sz300324', 'sz002769', 'sz300028', 'sh601118']
-
-stock_pick.choice_symbols: ['sz002502', 'sz002751', 'sz002680', 'sz000040', 'sz002323', 'sh601009', 'sh600800', 'sz300510', 'sh600122', 'sz000538', 'sz000534', 'sz200761', 'sz002411', 'sz002301', 'sz300197', 'sz002485', 'sz300237', 'sz002450', 'sz002857', 'sh603828', 'sz000981', 'sz002665', 'sz300538', 'sh600688', 'sz000545', 'sh603031', 'sz000979', 'sz002408', 'sz300362', 'sz002602', 'sz300178', 'sz300280', 'sz002719', 'sz002711', 'sh600892', 'sz300324', 'sz002769', 'sz002369', 'sz300028', 'sh601118']
-
-"""
 
 
 def pick_stock_by_kdj(show=True):
 
-    #choice_symbols = ['002236']
-    #choice_symbols = ['sh601118']
     #choice_symbols = ['sz002502', 'sz002751', 'sz002680', 'sz000040', 'sz002323', 'sh601009', 'sh600800', 'sz300510', 'sh600122', 'sz000538', 'sz000534', 'sz200761', 'sz002411', 'sz002301', 'sz300197', 'sz002485', 'sz300237', 'sz002450', 'sz002857', 'sh603828', 'sz000981', 'sz002665', 'sz300538', 'sh600688', 'sz000545', 'sh603031', 'sz000979', 'sz002408', 'sz300362', 'sz002602', 'sz300178', 'sz300280', 'sz002719', 'sz002711', 'sh600892', 'sz300324', 'sz002769', 'sz002369', 'sz300028', 'sh601118']
 
     # 选股都会是数量比较多的情况比如全市场股票
-    choice_symbols = None
+    #choice_symbols = None
+    choice_symbols = ['sz000058']
 
     benchmark = AbuBenchmark()
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
@@ -84,6 +62,7 @@ def pick_stock_by_kdj(show=True):
     stock_pick.fit()
 
     choiced_symbols = stock_pick.choice_symbols
+    print(choiced_symbols)
 
     if show == True:
         for symbol in choiced_symbols:
@@ -133,15 +112,13 @@ def run_kdj():
 def init_env():
     #环境
     abupy.env.disable_example_env_ipython()
-    #bd source have some data error, for example, 002236, some date error, for kdj
-    #abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tx
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tdx_db
     abupy.env.g_market_target = EMarketTargetType.E_MARKET_TARGET_CN    
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
-    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
+    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL
     #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_NORMAL
-    #abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+    abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
 
     
 def download_all_data():
@@ -150,7 +127,7 @@ def download_all_data():
     # 关闭沙盒数据环境
     abupy.env.disable_example_env_ipython()
     abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
-    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_bd
+    abupy.env.g_market_source = EMarketSourceType.E_MARKET_SOURCE_tdx_db
     abupy.env.g_data_cache_type = EDataCacheType.E_DATA_CACHE_CSV
 
     # 首选这里预下载市场中所有股票的7年数据(做5年回测，需要预先下载6年数据)
@@ -160,6 +137,5 @@ def download_all_data():
 
 if __name__ == "__main__":
     init_env()
-    run_kdj()
-    #pick_stock_by_kdj()
-    #download_all_data()
+    #run_kdj()
+    pick_stock_by_kdj()
