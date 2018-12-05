@@ -34,7 +34,7 @@ def csv2sql(fn, table, engine):
         if table == 'SH#000001':
             print("what ???????", fn)
             return
-        “”“
+        """
 
         if table == 'SH#999999':
             table = 'SH#000001'
@@ -79,11 +79,6 @@ if __name__ == "__main__":
 
 
     fl = file_list('/Users/sanit/abu/data/tdx_csv/Volumes/export')
-
-    """
-    csv2sql('/Users/sanit/abu/data/tdx_csv/Volumes/export/SZ#300579.csv', 
-        'SZ#300579', engine)
-    """
 
     len = len(fl)
     for i, l in enumerate(fl):

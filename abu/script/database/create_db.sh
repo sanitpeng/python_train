@@ -1,7 +1,8 @@
 cd ~/abu/data/tdx_csv
 pwd
-#tar cvjf export.tar.bz2 /Volumes/export
-rm -r Volumes
+rm -rf Volumes
+rm -f export.tar.bz2
+tar cvjf export.tar.bz2 /Volumes/export
 tar xvjf export.tar.bz2
 cd Volumes/export
 for file in ./*
