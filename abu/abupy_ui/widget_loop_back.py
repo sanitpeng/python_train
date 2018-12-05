@@ -14,7 +14,7 @@ def show_ui():
 
         import abupy
         # check_cn=False因为上文已经check了
-        abupy.env.enable_example_env_ipython(check_cn=False)
+        # abupy.env.enable_example_env_ipython(check_cn=False)
         from abupy import WidgetRunLoopBack
         widget = WidgetRunLoopBack()
     return widget()

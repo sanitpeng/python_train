@@ -36,7 +36,7 @@ class WidgetSymbolChoice(WidgetBase):
         self.choice_symbols.observe(self.choice_symbols_select, names='value')
 
         # 构建所有沙盒中的数据序列
-        market_title = [u'美股', u'A股', u'港股', u'国内', u'国际', u'币类']
+        market_title = [u'A股', u'美股', u'港股', u'国内', u'国际', u'币类']
         us_seed_symbol = [to_unicode('{}:{}'.format(AbuSymbolUS()[symbol].co_name.values[0], symbol))
                           for symbol in ABuMarket.K_SAND_BOX_US]
         cn_seed_symbol = [to_unicode('{}:{}'.format(AbuSymbolCN()[symbol].co_name.values[0], symbol))

@@ -499,7 +499,7 @@ class AbuMaSplit():
                 else: weight = 5
                 #weight = 5
                 date = self.kl_pd.date[self.today_ind]
-                print(ABuDateUtil.fmt_date(date), "bull bear weight: delta", weight, delta)
+                #print(ABuDateUtil.fmt_date(date), "bull bear weight: delta", weight, delta)
 
         #print("bull bear weight: delta", weight, delta)
         

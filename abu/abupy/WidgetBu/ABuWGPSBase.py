@@ -26,11 +26,11 @@ class PickStockWGManager(WidgetFactorManagerBase):
         from ..WidgetBu.ABuWGPickStock import PSShiftDistanceWidget, PSNTopWidget
         from ..WidgetBu.ABuWGPickStock import PSKDJWidget
         self.ps_array = []
+        self.ps_array.append(PSKDJWidget(self))
         self.ps_array.append(PSPriceWidget(self))
         self.ps_array.append(PSRegressAngWidget(self))
         self.ps_array.append(PSShiftDistanceWidget(self))
         self.ps_array.append(PSNTopWidget(self))
-        self.ps_array.append(PSKDJWidget(self))
 
         #  ps() call用widget组list
         children = [ps() for ps in self.ps_array]

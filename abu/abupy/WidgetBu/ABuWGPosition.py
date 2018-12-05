@@ -36,7 +36,7 @@ class AtrPosWidget(WidgetPositionBase):
                                            layout=self.label_layout)
         # 需要精确到小数点后5位
         self.atr_pos_base = widgets.FloatSlider(
-            value=0.10,
+            value=1.0,
             min=0.00001,
             max=1.0,
             step=0.00001,
@@ -46,7 +46,23 @@ class AtrPosWidget(WidgetPositionBase):
             readout=True,
             readout_format='.5f'
         )
-        atr_pos_base_box = widgets.VBox([atr_pos_base_label, self.atr_pos_base])
+
+        self.global_pos_base = widgets.FloatSlider(
+            value=1.0,
+            min=0.00001,
+            max=1.0,
+            step=0.00001,
+            description=u'全局基配',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='.5f'
+        )
+
+        atr_pos_base_box = widgets.VBox([atr_pos_base_label, 
+            self.global_pos_base, self.atr_pos_base])
+
+
 
         atr_base_price_label = widgets.Label(u'常数价格设定：默认15，建议在12-20之间',
                                              layout=self.label_layout)
@@ -72,7 +88,8 @@ class AtrPosWidget(WidgetPositionBase):
         """对应按钮添加AbuAtrPosition策略，构建策略字典对象factor_dict以及唯一策略描述字符串factor_desc_key"""
         factor_dict = {'class': AbuAtrPosition,
                        'atr_pos_base': self.atr_pos_base.value,
-                       'atr_base_price': self.atr_base_price.value}
+                       'atr_base_price': self.atr_base_price.value,
+                       'pos_max': self.global_pos_base.value}
 
         factor_desc_key = u'atr资管仓位基数:{}常数价格:{}'.format(
             self.atr_pos_base.value, self.atr_base_price.value)

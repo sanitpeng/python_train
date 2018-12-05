@@ -60,7 +60,9 @@ class WidgetEnvSetMixin(object):
                                 EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET.value: u'强制全部使用网络'}
         self.fetch_mode = widgets.RadioButtons(
             options=[u'本地数据模式(推荐)', u'本地网络结合模式', u'强制全部使用网络'],
-            value=self.fetch_mode_dict[ABuEnv.g_data_fetch_mode.value],
+            #使用网络模式，方便使用sql,而不改变全局变量
+            #value=self.fetch_mode_dict[ABuEnv.g_data_fetch_mode.value],
+            value=self.fetch_mode_dict[EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET.value],
             description=u'联网模式:',
             disabled=False
         )
@@ -80,7 +82,8 @@ class WidgetEnvSetMixin(object):
             options=[u'百度数据源(美股，A股，港股)', u'腾讯数据源(美股，A股，港股)', u'网易数据源(美股，A股，港股)',
                      u'新浪美股(美股)', u'通达讯(A股)', u'新浪国内期货(国内期货)', u'新浪国际期货(国际期货)',
                      u'比特币，莱特币'],
-            value=self.date_source_dict[ABuEnv.g_market_source.value],
+            #value=self.date_source_dict[ABuEnv.g_market_source.value],
+            value=self.date_source_dict[EMarketSourceType.E_MARKET_SOURCE_tdx_db.value],
             description=u'数据源:',
             disabled=False
         )

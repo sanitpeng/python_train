@@ -103,13 +103,13 @@ class BuyFactorWGManager(WidgetFactorManagerBase):
         from ..WidgetBu.ABuWGBuyFactor import BuyKDJWidget
 
         self.bf_array = []
+        self.bf_array.append(BuyKDJWidget(self))
         self.bf_array.append(BuyDMWidget(self))
         self.bf_array.append(BuyXDWidget(self))
         self.bf_array.append(BuyWDWidget(self))
         self.bf_array.append(BuySDWidget(self))
         self.bf_array.append(BuyWMWidget(self))
         self.bf_array.append(BuyDUWidget(self))
-        self.bf_array.append(BuyKDJWidget(self))
 
         # bf() call用widget组list
         children = [bf() for bf in self.bf_array]

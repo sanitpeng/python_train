@@ -479,7 +479,7 @@ class BuyKDJWidget(WidgetFactorBuyBase):
             'ma_period': ma_int, 
             'k_threshold': k_int, 'd_threshold': d_int, 'j_threshold': j_int
             }
-        factor_desc_key = u'KDJ均线买入'
+        factor_desc_key = u'KDJ,j:{}均线{}买入'.format(j_int, ma_int)
         return factor_dict, factor_desc_key
 
     def delegate_class(self):

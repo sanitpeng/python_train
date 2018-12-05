@@ -307,7 +307,7 @@ class EMarketSubType(Enum):
 
 
 """切换目标操作市场，美股，A股，港股，期货，比特币等，默认美股市场"""
-g_market_target = EMarketTargetType.E_MARKET_TARGET_US
+g_market_target = EMarketTargetType.E_MARKET_TARGET_CN
 
 """市场中1年交易日，默认250日"""
 g_market_trade_year = 250
