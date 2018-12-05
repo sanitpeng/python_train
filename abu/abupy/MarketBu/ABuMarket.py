@@ -41,8 +41,8 @@ K_SAND_BOX_US = ['usTSLA', 'usNOAH', 'usSFUN', 'usBIDU', 'usAAPL', 'usGOOG', 'us
 K_SAND_BOX_CN = ['sz002230', 'sz300104', 'sz300059', 'sh601766', 'sh600085', 'sh600036',
                  'sh600809', 'sz000002', 'sz002594', 'sz002739']
 K_SAND_BOX_HK = ['hk03333', 'hk00700', 'hk02333', 'hk01359', 'hk00656', 'hk03888', 'hk02318']
-#K_TDX_BOX_CN = ['sz000002', 'sh601398', 'sz002236', 'sh601990', 'sh600489', 'sh600036']
-K_TDX_BOX_CN = ['sz000002', 'sh601398', 'sz002236',              'sh600489', 'sh600036']
+#K_TDX_BOX_CN = ['sz000002', 'sz000058', 'sh601398', 'sz002236', 'sh601990', 'sh600489', 'sh600036']
+K_TDX_BOX_CN = ['sz000002', 'sz000058', 'sh601398', 'sz002236',              'sh600489', 'sh600036']
 
 
 # noinspection PyUnresolvedReferences

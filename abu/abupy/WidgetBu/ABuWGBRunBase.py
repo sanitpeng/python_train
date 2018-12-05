@@ -82,8 +82,7 @@ class WidgetEnvSetMixin(object):
             options=[u'百度数据源(美股，A股，港股)', u'腾讯数据源(美股，A股，港股)', u'网易数据源(美股，A股，港股)',
                      u'新浪美股(美股)', u'通达讯(A股)', u'新浪国内期货(国内期货)', u'新浪国际期货(国际期货)',
                      u'比特币，莱特币'],
-            #value=self.date_source_dict[ABuEnv.g_market_source.value],
-            value=self.date_source_dict[EMarketSourceType.E_MARKET_SOURCE_tdx_db.value],
+            value=self.date_source_dict[ABuEnv.g_market_source.value],
             description=u'数据源:',
             disabled=False
         )

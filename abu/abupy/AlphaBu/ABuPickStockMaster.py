@@ -13,7 +13,7 @@ import logging
 
 from .ABuPickStockExecute import do_pick_stock_work, do_pick_stock_thread_work
 from ..CoreBu import ABuEnv
-from ..CoreBu.ABuEnv import EMarketDataFetchMode
+from ..CoreBu.ABuEnv import EMarketDataFetchMode, EMarketSourceType
 from ..CoreBu.ABuEnvProcess import AbuEnvProcess
 from ..MarketBu.ABuMarket import split_k_market, all_symbol
 from ..MarketBu import ABuMarket
@@ -54,8 +54,10 @@ class AbuPickStockMaster(object):
             if n_process_pick_stock > 1 and ABuEnv.g_data_fetch_mode != EMarketDataFetchMode.E_DATA_FETCH_FORCE_LOCAL:
                 # 1. hdf5多进程容易写坏数据，所以只多进程读取，不并行写入
                 # 2. MAC OS 10.9 之后并行联网＋numpy 系统bug crash，卡死等问题
-                logging.info('batch get only support E_DATA_FETCH_FORCE_LOCAL for Parallel!')
-                n_process_pick_stock = 1
+                if ABuEnv.g_market_source != EMarketSourceType.E_MARKET_SOURCE_tdx_db:
+                    #使用mysql 数据库,可以并行
+                    logging.info('batch get only support E_DATA_FETCH_FORCE_LOCAL for Parallel!')
+                    n_process_pick_stock = 1
 
             # 根据输入的choice_symbols和要并行的进程数，分配symbol到n_process_pick_stock进程中
             process_symbols = split_k_market(n_process_pick_stock, market_symbols=choice_symbols)
