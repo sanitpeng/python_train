@@ -20,10 +20,11 @@ from .UmpBu import *
 from .MarketBu import *
 from .SimilarBu import *
 from .WidgetBu import *
+from .CrawlBu import *
 
 __all__ = ['AlphaBu', 'BetaBu', 'CheckBu', 'UmpBu', 'FactorSellBu', 'FactorSell', 'IndicatorBu', 'MarketBu', 'UtilBu',
            'SimilarBu', 'MetricsBu', 'SlippageBu', 'PickStockBu', 'CoreBu', 'TLineBu',
-           'MLBu', 'DLBu', 'TradeBu', 'WidgetBu']
+           'MLBu', 'DLBu', 'TradeBu', 'WidgetBu', 'CrawlBu']
 
 __version__ = '0.4.0'
 __author__ = '阿布'
