@@ -351,10 +351,8 @@ class PSKDJWidget(WidgetPickStockBase):
             readout_format='d'
         )
 
-        self.kdj = widgets.VBox([self.k_int, self.d_int, self.j_int])
-        self.kdj_box = widgets.VBox([self.kdj_label, self.kdj])
-
-        self.widget = widgets.VBox([self.description, self.kdj_box, self.reversed_box, self.add],  
+        self.kdj_box = widgets.VBox([self.kdj_label, self.k_int, self.d_int, self.j_int])
+        self.widget = widgets.VBox([self.description, self.kdj_box, self.reversed_box, self.add_box],
             # border='solid 1px',
             layout=self.widget_layout)
 

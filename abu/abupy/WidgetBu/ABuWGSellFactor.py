@@ -364,8 +364,7 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
 
 
 
-        self.kdj = widgets.VBox([self.k_int, self.d_int, self.j_int])
-        self.kdj_box = widgets.VBox([self.kdj_label, self.kdj])
+        self.kdj_box = widgets.VBox([self.kdj_label, self.k_int, self.d_int, self.j_int])
 
 
         self.mfi_label = widgets.Label(u'调整MFI值', layout=self.label_layout)
@@ -380,10 +379,10 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
             readout=True,
             readout_format='d'
         )
-        self.mfi = widgets.VBox([self.mfi_int])
-        self.mfi_box = widgets.VBox([self.mfi_label, self.mfi])
+        self.mfi_box = widgets.VBox([self.mfi_label, self.mfi_int])
 
-        self.widget = widgets.VBox([self.description, self.kdj_box, self.mfi_box, self.add],  
+        #注意，需要添加add_box,之前错误copy buyFactor的，使用了add,导致界面不正确
+        self.widget = widgets.VBox([self.description, self.kdj_box, self.mfi_box, self.add_box],  
             # border='solid 1px',
             layout=self.widget_layout)
 
@@ -408,5 +407,4 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
     def delegate_class(self):
         """子类因子所委托的具体因子类AbuFactorSellCurveProjection"""
         return AbuFactorSellCurveProjection
-
-       
+      
