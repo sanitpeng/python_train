@@ -40,7 +40,9 @@ class WidgetSymbolChoice(WidgetBase):
         us_seed_symbol = [to_unicode('{}:{}'.format(AbuSymbolUS()[symbol].co_name.values[0], symbol))
                           for symbol in ABuMarket.K_SAND_BOX_US]
         cn_seed_symbol = [to_unicode('{}:{}'.format(AbuSymbolCN()[symbol].co_name.values[0], symbol))
-                          for symbol in ABuMarket.K_SAND_BOX_CN]
+                          #for symbol in ABuMarket.K_SAND_BOX_CN]
+                          #set my default
+                          for symbol in ABuMarket.K_TDX_BOX_CN]
         hk_seed_symbol = [to_unicode('{}:{}'.format(AbuSymbolHK()[symbol].co_name.values[0], symbol))
                           for symbol in ABuMarket.K_SAND_BOX_HK]
         fcn_seed_symbol = [to_unicode('{}:{}'.format(AbuFuturesCn()[symbol]['product'].values[0], symbol))

@@ -103,7 +103,8 @@ class BuyFactorWGManager(WidgetFactorManagerBase):
         from ..WidgetBu.ABuWGBuyFactor import BuyKDJWidget
 
         self.bf_array = []
-        self.bf_array.append(BuyKDJWidget(self))
+        kdj = BuyKDJWidget(self)
+        self.bf_array.append(kdj)
         self.bf_array.append(BuyDMWidget(self))
         self.bf_array.append(BuyXDWidget(self))
         self.bf_array.append(BuyWDWidget(self))
@@ -122,6 +123,8 @@ class BuyFactorWGManager(WidgetFactorManagerBase):
             sub_children_group = self._sub_children(children, len(children) / self._sub_children_group_cnt)
             sub_children_box = [widgets.HBox(sub_children) for sub_children in sub_children_group]
             self.factor_box = widgets.VBox(sub_children_box)
+        #defaut use kdj    
+        kdj.add_buy_factor(None)
 
 
 class WidgetFactorBuyBase(WidgetFactorBase):

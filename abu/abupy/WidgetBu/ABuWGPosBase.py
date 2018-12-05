@@ -32,7 +32,8 @@ class PosWGManager(WidgetFactorManagerBase):
 
         from ..WidgetBu.ABuWGPosition import AtrPosWidget, KellyPosWidget, PtPosition
         self.pos_array = []
-        self.pos_array.append(AtrPosWidget(self))
+        atr = AtrPosWidget(self)
+        self.pos_array.append(atr)
         self.pos_array.append(KellyPosWidget(self))
         self.pos_array.append(PtPosition(self))
 
@@ -48,6 +49,8 @@ class PosWGManager(WidgetFactorManagerBase):
             self.factor_box = widgets.VBox(sub_children_box)
         # 买入因子是特殊的存在，都需要买入因子的全局数据
         self.buy_factor_manger = None
+        #set atr is default, by sanit.peng
+        atr.add_position(None)
 
     def register(self, buy_factor_manger):
         """选股manager内部因子注册接收买入因子添加的改变"""

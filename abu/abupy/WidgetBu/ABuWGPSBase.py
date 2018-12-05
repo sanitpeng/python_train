@@ -26,7 +26,8 @@ class PickStockWGManager(WidgetFactorManagerBase):
         from ..WidgetBu.ABuWGPickStock import PSShiftDistanceWidget, PSNTopWidget
         from ..WidgetBu.ABuWGPickStock import PSKDJWidget
         self.ps_array = []
-        self.ps_array.append(PSKDJWidget(self))
+        kdj = PSKDJWidget(self)
+        self.ps_array.append(kdj)
         self.ps_array.append(PSPriceWidget(self))
         self.ps_array.append(PSRegressAngWidget(self))
         self.ps_array.append(PSShiftDistanceWidget(self))
@@ -44,6 +45,8 @@ class PickStockWGManager(WidgetFactorManagerBase):
             self.factor_box = widgets.VBox(sub_children_box)
         # 买入因子是特殊的存在，都需要买入因子的全局数据
         self.buy_factor_manger = None
+        kdj.add_pick_stock(None)
+
 
     def seed_choice_symbol_update(self, seed_choice_symbol):
         """更新股池中的种子symbol到需要种子symbol的策略中"""

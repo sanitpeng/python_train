@@ -27,7 +27,8 @@ class SellFactorWGManager(WidgetFactorManagerBase):
         from ..WidgetBu.ABuWGSellFactor import SellCurveProjectionWidget
 
         self.sf_array = []
-        self.sf_array.append(SellCurveProjectionWidget(self))
+        curveprojection = SellCurveProjectionWidget(self)
+        self.sf_array.append(curveprojection)
         self.sf_array.append(SellAtrNStopWidget(self))
         self.sf_array.append(SellCloseAtrNWidget(self))
         self.sf_array.append(SellPreAtrNWidget(self))
@@ -48,6 +49,7 @@ class SellFactorWGManager(WidgetFactorManagerBase):
 
         # 买入因子是特殊的存在，都需要买入因子的全局数据
         self.buy_factor_manger = None
+        curveprojection.add_sell_factor(None)
 
     def register(self, buy_factor_manger):
         """卖出manager内部因子注册接收买入因子添加的改变"""
