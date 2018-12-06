@@ -6,6 +6,10 @@ import numpy as np
 import pandas as pd
 import warnings
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 # noinspection PyUnresolvedReferences
 import abu_local_env
 import abupy
@@ -27,6 +31,7 @@ from abupy import ABuSymbolPd
 
 from abupy import AbuPickStockWorker
 from abupy import AbuPickKDJ
+from abupy import ABuPickStockExecute
 
 from abupy import query_stock_info
 
@@ -50,18 +55,27 @@ def pick_stock_by_kdj(show=True):
     #choice_symbols = ['sz002502', 'sz002751', 'sz002680', 'sz000040', 'sz002323', 'sh601009', 'sh600800', 'sz300510', 'sh600122', 'sz000538', 'sz000534', 'sz200761', 'sz002411', 'sz002301', 'sz300197', 'sz002485', 'sz300237', 'sz002450', 'sz002857', 'sh603828', 'sz000981', 'sz002665', 'sz300538', 'sh600688', 'sz000545', 'sh603031', 'sz000979', 'sz002408', 'sz300362', 'sz002602', 'sz300178', 'sz300280', 'sz002719', 'sz002711', 'sh600892', 'sz300324', 'sz002769', 'sz002369', 'sz300028', 'sh601118']
 
     # 选股都会是数量比较多的情况比如全市场股票
-    #choice_symbols = None
-    choice_symbols = ['sz000058']
+    choice_symbols = None
+    #choice_symbols = ['sz000058']
 
     benchmark = AbuBenchmark()
     capital = AbuCapital(STOCK_CAPITAL, benchmark)
     kl_pd_manager = AbuKLManager(benchmark, capital)
+
+    """
     stock_pick = AbuPickStockWorker(capital, benchmark, kl_pd_manager,
                                     choice_symbols=choice_symbols,
                                     stock_pickers=stock_pickers)
-    stock_pick.fit()
 
+
+    stock_pick.fit()
     choiced_symbols = stock_pick.choice_symbols
+
+    """
+
+    choiced_symbols = ABuPickStockExecute.do_pick_stock_work(choice_symbols, 
+        benchmark, capital, stock_pickers)
+
     print(choiced_symbols)
 
     if show == True:

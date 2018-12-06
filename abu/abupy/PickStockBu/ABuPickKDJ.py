@@ -74,12 +74,12 @@ class AbuPickKDJ(AbuPickStockBase):
        
         # 根据参数进行条件判断
         if j_int < self.j_threshold:
-            log_func(u'kdj选中，[{},{},{}], j_threshold:{}'.format(k_int, 
-                d_int, j_int, self.j_threshold))
+            #log_func(u'kdj选中，[{},{},{}], j_threshold:{}'.format(k_int, 
+            #    d_int, j_int, self.j_threshold))
             return True
 
-        log_func(u'kdj未选中，[{},{},{}], j_threshold:{}'.format(k_int, 
-            d_int, j_int, self.j_threshold))
+        #log_func(u'kdj未选中，[{},{},{}], j_threshold:{}'.format(k_int, 
+        #    d_int, j_int, self.j_threshold))
         return False
 
     def fit_first_choice(self, pick_worker, choice_symbols, *args, **kwargs):
