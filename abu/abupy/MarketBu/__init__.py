@@ -14,6 +14,7 @@ from .ABuMarket import MarketMixin
 from . import ABuIndustries
 from . import ABuMarketDrawing
 from . import ABuNetWork
+from .ABuDataSource import kline_pd
 
 __all__ = [
     'BaseMarket',
@@ -40,5 +41,6 @@ __all__ = [
     'search_to_symbol_dict',
     'ABuIndustries',
     'ABuMarketDrawing',
-    'ABuNetWork'
+    'ABuNetWork',
+    'kline_pd'
 ]

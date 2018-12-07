@@ -231,6 +231,8 @@ class TXApi(StockBaseMarket, SupportMixin):
         else:
             return None
 
+        #腾讯volume是用的手，转化成股，by sanit.peng
+        kl_pd['volume'] = kl_pd['volume'] * 100
         return StockBaseMarket._fix_kline_pd(kl_pd, n_folds, start, end)
 
     def hkmoney(self):
