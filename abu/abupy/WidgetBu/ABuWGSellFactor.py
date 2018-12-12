@@ -327,7 +327,7 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
 
         self.kdj_label = widgets.Label(u'KDJ的值调整', layout=self.label_layout)
         self.k_int = widgets.IntSlider(
-            value=50,
+            value=70,
             min=0,
             max=100,
             step=1,
@@ -339,7 +339,7 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
         )
 
         self.d_int = widgets.IntSlider(
-            value=50,
+            value=80,
             min=0,
             max=100,
             step=1,
@@ -351,7 +351,7 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
         )
 
         self.j_int = widgets.IntSlider(
-            value=90,
+            value=100,
             min=-10,
             max=120,
             step=1,
@@ -369,7 +369,7 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
 
         self.mfi_label = widgets.Label(u'调整MFI值', layout=self.label_layout)
         self.mfi_int = widgets.IntSlider(
-            value=85,
+            value=80,
             min=0,
             max=100,
             step=1,
@@ -379,7 +379,15 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
             readout=True,
             readout_format='d'
         )
-        self.mfi_box = widgets.VBox([self.mfi_label, self.mfi_int])
+
+        self.debug = widgets.Checkbox(
+            value=False,
+            description=u'调试信息',
+            disabled=False
+        )
+
+
+        self.mfi_box = widgets.VBox([self.mfi_label, self.mfi_int, self.debug])
 
         #注意，需要添加add_box,之前错误copy buyFactor的，使用了add,导致界面不正确
         self.widget = widgets.VBox([self.description, self.kdj_box, self.mfi_box, self.add_box],  
@@ -396,10 +404,12 @@ class SellCurveProjectionWidget(WidgetFactorSellBase):
         d_int = self.d_int.value
         j_int = self.j_int.value
         mfi_int = self.mfi_int.value
+        debug = self.debug.value
 
         factor_dict = {'class': AbuFactorSellCurveProjection, 
             'mfi_threshold': mfi_int,
-            'k_threshold': k_int, 'd_threshold': d_int, 'j_threshold': j_int        
+            'k_threshold': k_int, 'd_threshold': d_int, 'j_threshold': j_int,
+            'debug':debug
             }
         factor_desc_key = u'曲线投影mfi:{} j:{}卖出'.format(mfi_int, j_int)
         return factor_dict, factor_desc_key

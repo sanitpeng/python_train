@@ -420,6 +420,7 @@ class TDXDBApi(StockBaseMarket, SupportMixin):
             df = pd.read_sql(sql=sql, con=self.engine)
         except Exception as e:
             print(e.message)
+            return None
 
         #返回json字符串，模拟网络返回
         return df.to_json(orient='table')
@@ -450,6 +451,7 @@ class TDXDBApi(StockBaseMarket, SupportMixin):
 
         #print(req_year)
 
+        kl_df = None
         for year in req_year:
             data = self.get_kline_sql(symbol, year)
             temp_df = None

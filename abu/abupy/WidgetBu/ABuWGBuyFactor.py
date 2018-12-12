@@ -445,9 +445,20 @@ class BuyKDJWidget(WidgetFactorBuyBase):
             readout_format='d'
         )
 
+        self.mfi_int = widgets.IntSlider(
+            value=20,
+            min=0,
+            max=100,
+            step=1,
+            description=u'mfi值',
+            disabled=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d'
+        )
 
 
-        self.kdj = widgets.VBox([self.k_int, self.d_int, self.j_int])
+        self.kdj = widgets.VBox([self.k_int, self.d_int, self.j_int, self.mfi_int])
         self.kdj_box = widgets.VBox([self.kdj_label, self.kdj])
 
         self.ma_label = widgets.Label(u'调整快速均线值', layout=self.label_layout)
@@ -462,7 +473,15 @@ class BuyKDJWidget(WidgetFactorBuyBase):
             readout=True,
             readout_format='d'
         )
-        self.ma = widgets.VBox([self.ma_int])
+
+        self.debug = widgets.Checkbox(
+            value=False,
+            description=u'调试信息',
+            disabled=False
+        )
+
+        
+        self.ma = widgets.VBox([self.ma_int, self.debug])
         self.ma_box = widgets.VBox([self.ma_label, self.ma])
 
         self.widget = widgets.VBox([self.description, self.kdj_box, self.ma_box, self.add],  # border='solid 1px',
@@ -473,11 +492,14 @@ class BuyKDJWidget(WidgetFactorBuyBase):
         k_int = self.k_int.value
         d_int = self.d_int.value
         j_int = self.j_int.value
+        mfi_int = self.mfi_int.value
         ma_int = self.ma_int.value
+        debug = self.debug.value
 
         factor_dict = {'class': AbuFactorBuyKDJ, 
             'ma_period': ma_int, 
-            'k_threshold': k_int, 'd_threshold': d_int, 'j_threshold': j_int
+            'k_threshold': k_int, 'd_threshold': d_int, 'j_threshold': j_int,
+            'mfi_threshold':mfi_int, 'debug':debug
             }
         factor_desc_key = u'KDJ,j:{}均线{}买入'.format(j_int, ma_int)
         return factor_dict, factor_desc_key

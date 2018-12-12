@@ -9,7 +9,7 @@ from __future__ import division
 
 import pandas as pd
 
-from ..IndicatorBu import ABuNDKdj
+from ..IndicatorBu import ABuNDKdj,ABuNDMfi
 from ..UtilBu import ABuDateUtil, AbuMaSplit
 
 from .ABuFactorBuyBase import AbuFactorBuyBase, AbuFactorBuyXD, BuyCallMixin, BuyPutMixin
@@ -62,6 +62,10 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
         if 'j_threshold' in kwargs:
             self.j_threshold = kwargs['j_threshold']        
 
+        self.mfi_threshold = 20
+        if 'mfi_threshold' in kwargs:
+            self.mfi_threshold = kwargs['mfi_threshold']        
+
         self.debug = False 
         if 'debug' in kwargs:
             self.debug = kwargs['debug']        
@@ -70,18 +74,24 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
 
         #buld the symbol's kdj
         k, d, j = ABuNDKdj.calc_kdj(self.kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
+        mfi = ABuNDMfi.calc_mfi(self.kl_pd)
+
         self._param_pd = pd.DataFrame({
                 'KDJ_K': k,
                 'KDJ_D': d,
                 'KDJ_J': j,
+                'MFI'  : mfi
         })
 
 
         self.mean_split.calc_trend_weight()
+        self.kdj_buy_indicate = 0
+        self.mfi_buy_indicate = 0
 
 
         # 在输出生成的orders_pd中显示的名字
-        self.factor_name = '{}:{}'.format(self.__class__.__name__, self.j_threshold )
+        self.factor_name = '{}:j={},mfi={}'.format(self.__class__.__name__, 
+            self.j_threshold, self.mfi_threshold )
 
     def _show_info(self, date, dict):
         if self.debug == False :
@@ -92,6 +102,78 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
             print('    {key}:{value}'.format(key = key, value = value))
         print(' ')
 
+
+    def strategy_1(self, today):
+        k_value = self.indicator['kdj'][0]
+        d_value = self.indicator['kdj'][1]
+        j_value = self.indicator['kdj'][2]
+        mfi = self.indicator['mfi']
+
+        if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
+            self.kdj_buy_indicate = self.kdj_buy_indicate + 1
+
+            if (mfi < self.mfi_threshold):
+                self.mfi_buy_indicate = 0
+                self.kdj_buy_indicate = 0
+                return True
+                
+
+        """
+        if (mfi < self.mfi_threshold):
+            self.mfi_buy_indicate = self.mfi_buy_indicate + 1
+
+
+        if (self.mfi_buy_indicate and self.kdj_buy_indicate):
+            self.mfi_buy_indicate = 0
+            self.kdj_buy_indicate = 0
+            return True
+        """
+        return False
+
+
+
+    def strategy_2(self, today):
+        #希望的策略，但是判断牛熊太不准确，包括人识别牛熊也不准确，暂时放弃
+
+        """"
+        #当前个股的牛熊权重-20 ---- 20, 说明在牛熊转换期间，并且很有可能是牛转熊，不参与交易
+        weight = abs(self.indicator['bb_weight'])
+        if (weight < 20):
+
+            if (self.indicator['bb_weight'] > 10):    
+
+                if (self.debug):
+                    print(ABuDateUtil.fmt_date(today.date),
+                        "牛熊交界，价格低于牛熊分界，倾向牛市上涨中继， 不参与交易 weight = %d"
+                        %(self.indicator['bb_weight']))
+                return None
+
+            if (self.debug):
+                print(ABuDateUtil.fmt_date(today.date), 
+                    "牛熊交界,不参与交易 weight = %d" %(self.indicator['bb_weight']))
+
+            return None
+
+        
+        if (self.indicator['bb_weight'] >= 20):
+            #牛市策略
+            #if j_value < 0 :
+            if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
+                # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
+                self._show_info(today.date, self.indicator)
+                return self.buy_tomorrow()
+            return None 
+
+
+        if (self.indicator['bb_weight'] <= -20):
+            #熊市策略
+            if j_value < self.j_threshold and d_value < self.d_threshold and k_value < self.k_threshold :
+                # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
+                self._show_info(today.date, self.indicator)
+                return self.buy_tomorrow()
+            return None
+        """ 
+        return False
 
     def fit_day(self, today):
         """
@@ -109,6 +191,7 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
 
         kdj = [k_value, d_value, j_value]
         self.indicator['kdj'] = kdj
+        self.indicator['mfi'] = self._param_pd.MFI[self.today_ind]
 
 
         """
@@ -140,47 +223,9 @@ class AbuFactorBuyKDJ(AbuFactorBuyBase, BuyCallMixin):
         #均线价格<=0，说明均线周期没有到
         if (self.indicator['ma'] <= 0): return None
 
+        if (self.strategy_1(today)):
+            self._show_info(today.date, self.indicator)
+            return self.buy_tomorrow()
 
-        """
-        #if j_value < self.j_threshold and k_value < self.k_threshold :
-        #if j_value < self.j_threshold or d_value < self.d_threshold or k_value < self.k_threshold :
-        """
-
-        #当前个股的牛熊权重-20 ---- 20, 说明在牛熊转换期间，并且很有可能是牛转熊，不参与交易
-        weight = abs(self.indicator['bb_weight'])
-        if (weight < 20):
-
-            if (self.indicator['bb_weight'] > 10):    
-
-                if (self.debug):
-                    print(ABuDateUtil.fmt_date(today.date),
-                        "牛熊交界，价格低于牛熊分界，倾向牛市上涨中继， 不参与交易 weight = %d"
-                        %(self.indicator['bb_weight']))
-                return None
-
-            if (self.debug):
-                print(ABuDateUtil.fmt_date(today.date), 
-                    "牛熊交界,不参与交易 weight = %d" %(self.indicator['bb_weight']))
-
-            return None
-
-        
-        if (self.indicator['bb_weight'] >= 20):
-            #牛市策略
-            if j_value < 0 :
-                # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
-                self._show_info(today.date, self.indicator)
-                return self.buy_tomorrow()
-            return None 
-
-
-        if (self.indicator['bb_weight'] <= -20):
-            #熊市策略
-            if j_value < 20 and d_value < 20 and k_value < 20 :
-                # 生成买入订单, 由于使用了今天的收盘价格做为策略信号判断，所以信号发出后，只能明天买
-                self._show_info(today.date, self.indicator)
-                return self.buy_tomorrow()
-            return None
-    
         return None
 

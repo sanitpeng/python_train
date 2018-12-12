@@ -37,6 +37,7 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         self.d_threshold = kwargs.pop('d_threshold', 80)
         self.j_threshold = kwargs.pop('j_threshold', 100)
         self.mfi_threshold = kwargs.pop('mfi_threshold', 80)
+        self.debug = kwargs.pop('debug', False)
 
         #buld the symbol's kdj
         k, d, j = ABuNDKdj.calc_kdj(self.kl_pd, self.fastk_period, self.slowk_period, self.fastd_period)
@@ -74,6 +75,12 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
         j_value = self.indicator['kdj'][2]
         mfi = self.indicator['mfi'] 
 
+
+        if j_value >= self.j_threshold and d_value >= self.d_threshold and k_value >= self.k_threshold:
+            if (mfi >= self.mfi_threshold):
+                return True
+
+        """
         if j_value >= self.j_threshold:
             self.kdj_sell_indicate = self.kdj_sell_indicate + 1
 
@@ -81,8 +88,6 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
             self.mfi_sell_indicate = self.mfi_sell_indicate + 1
 
 
-        #if (self.mfi_sell_indicate and self.kdj_sell_indicate):
-        #if (self.mfi_sell_indicate or self.kdj_sell_indicate):
         if (self.indicator['bb_weight'] >= 20):
             #牛市
             if (self.mfi_sell_indicate):
@@ -96,12 +101,14 @@ class AbuFactorSellCurveProjection(AbuFactorSellBase):
                 self.mfi_sell_indicate = 0
                 self.kdj_sell_indicate = 0
                 return True
-        
+        """ 
 
         return False
 
 
     def _show_info(self, date, dict):
+        if(self.debug == False):
+            return
         print(ABuDateUtil.fmt_date(date), ' sell signal, indicator: ')
         for key,value in dict.items():
             print('    {key}:{value}'.format(key = key, value = value))
